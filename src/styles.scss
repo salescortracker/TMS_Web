@@ -1,0 +1,591 @@
+/* ==========================================================================
+   Global / common styles for the whole project.
+   Components stay style-free (no *.component.scss) — every visual rule
+   for the app lives here so the look stays consistent across pages.
+   ========================================================================== */
+
+/* ---------- Design tokens ---------- */
+:root {
+  --color-primary: #e0293d;
+  --color-primary-dark: #b81f30;
+  --color-primary-darker: #7a1220;
+
+  --color-brand-start: #4a0a14;
+  --color-brand-mid: #8f1626;
+  --color-brand-end: #6b0f1c;
+
+  --color-success: #1f9d55;
+  --color-success-bg: #e5f7ec;
+
+  --color-ink: #1a1a1f;
+  --color-body: #4b4b55;
+  --color-muted: #7a7a86;
+  --color-border: #e4e2e6;
+  --color-surface: #ffffff;
+  --color-surface-alt: #faf9fb;
+
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(20, 10, 12, 0.06);
+  --shadow-md: 0 12px 32px rgba(60, 10, 20, 0.12);
+  --shadow-lg: 0 24px 60px rgba(60, 10, 20, 0.18);
+}
+
+/* ---------- Reset & base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-body);
+  background: var(--color-surface-alt);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--color-ink);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+/* ---------- Utility text ---------- */
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.eyebrow--on-brand {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.text-muted {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link--strong {
+  color: var(--color-primary-dark);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn--primary:active {
+  transform: translateY(1px);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* ---------- Form ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-group:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(224, 41, 61, 0.12);
+}
+
+.input-group__icon {
+  display: inline-flex;
+  color: var(--color-muted);
+}
+
+.input-group__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.input-group__control {
+  flex: 1;
+  min-width: 0;
+  padding-block: 0.8rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
+
+.input-group__control::placeholder {
+  color: #b7b5bd;
+}
+
+.input-group__action {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.input-group__action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.form-error {
+  margin: -0.5rem 0 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: #fdecec;
+  color: #b3261e;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ---------- Auth layout ---------- */
+.auth {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+}
+
+.auth__brand {
+  position: relative;
+  padding: 2.75rem;
+  color: #fff;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08), transparent 45%),
+    linear-gradient(155deg, var(--color-brand-start) 0%, var(--color-brand-mid) 55%, var(--color-brand-end) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.auth__brand-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  height: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.brand__name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.auth__intro {
+  max-width: 30rem;
+}
+
+.auth__title {
+  margin-top: 0.5rem;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.auth__subtitle {
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.6;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feature-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+}
+
+.feature-list__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.feature-list__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.auth__footer {
+  margin-top: auto;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Timesheet preview card ---------- */
+.timesheet-card {
+  margin-top: auto;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-lg);
+  max-width: 26rem;
+}
+
+.timesheet-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-body);
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.timesheet-card__stats {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.timesheet-card__value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.timesheet-card__unit {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.timesheet-card__week {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.progress {
+  margin-top: 0.85rem;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.week-strip {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+}
+
+.week-strip__day {
+  padding-block: 0.55rem;
+  border-radius: var(--radius-sm);
+  background: #fbe6e8;
+  color: transparent;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.week-strip__day--active {
+  background: var(--color-primary);
+}
+
+/* ---------- Sign-in panel ---------- */
+.auth__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  background: var(--color-surface-alt);
+}
+
+.auth__panel-inner {
+  width: 100%;
+  max-width: 26rem;
+}
+
+.auth__panel-title {
+  font-size: 1.8rem;
+}
+
+.auth__links {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-body);
+}
+
+/* ---------- Demo role grid ---------- */
+.role-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+
+.role-chip {
+  padding: 0.65rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.role-chip:hover {
+  border-color: var(--color-primary);
+  background: #fdf1f2;
+}
+
+.role-chip:active {
+  transform: translateY(1px);
+}
+
+.role-chip:last-child:nth-child(3n + 1) {
+  grid-column: 2 / span 1;
+}
+
+/* ---------- Generic placeholder page shell (role dashboards) ---------- */
+.page-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .auth__brand {
+    padding: 2rem;
+  }
+
+  .timesheet-card {
+    max-width: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .role-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .role-chip:last-child:nth-child(3n + 1) {
+    grid-column: auto;
+  }
+
+  .auth__title {
+    font-size: 2rem;
+  }
+}
