@@ -1,0 +1,13 @@
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>Bulk timesheet upload</h1>
+      <p class="text-muted">
+        Upload an Excel file with many days for many candidates. Every row is validated before
+        anything is imported.
+      </p>
+    </div>
+  </div>
+
+  <app-upload-panel [columnsHint]="columnsHint" [rules]="validationRules" />
+</div>

@@ -1,0 +1,69 @@
+<div class="dashboard">
+  <div class="dashboard__heading">
+    <div>
+      <h1>Welcome, Candidate Demo</h1>
+      <p class="text-muted">Your days for the week of Sep 21 – Sep 27, 2026.</p>
+    </div>
+    <button type="button" class="btn btn--primary">Open my timesheet</button>
+  </div>
+
+  <app-clock-card />
+
+  <div class="notice-banner">
+    <span>You haven't submitted today's hours yet.</span>
+    <a class="link link--strong" href="javascript:void(0)">Enter and submit today</a>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-card__label">Submitted this week</span>
+      <span class="stat-card__value">{{ submittedThisWeek }}</span>
+    </div>
+    <div class="stat-card stat-card--highlight">
+      <span class="stat-card__label">Pending approval</span>
+      <span class="stat-card__value stat-card__value--warning">{{ pendingApproval }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card__label">Approved</span>
+      <span class="stat-card__value stat-card__value--success">{{ approvedThisWeek }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card__label">Rejected</span>
+      <span class="stat-card__value stat-card__value--danger">{{ rejectedThisWeek }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card__label">Drafts</span>
+      <span class="stat-card__value">{{ draftsCount }}</span>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="section-header">
+      <h2>Week progress</h2>
+      <span class="section-header__hint">{{ weekLoggedHours }} / {{ weekTargetHours }} hrs</span>
+    </div>
+
+    <div class="progress">
+      <div class="progress__bar" [style.width.%]="weekProgressPercent"></div>
+    </div>
+
+    <div class="day-grid">
+      @for (dayCard of dayCards; track dayCard.day) {
+        <div class="day-card" [class.day-card--today]="dayCard.isToday">
+          <span class="day-card__name">{{ dayCard.day }}</span>
+          <span class="day-card__date">{{ dayCard.date }}</span>
+          <span
+            class="badge"
+            [class.badge--neutral]="dayCard.status === 'Draft' || dayCard.status === 'Upcoming'"
+            [class.badge--danger]="dayCard.status === 'Not entered'"
+            >{{ dayCard.status }}</span
+          >
+          <span class="day-card__hours">{{ dayCard.hours ?? '—' }}</span>
+          @if (dayCard.task) {
+            <span class="day-card__task">{{ dayCard.task }}</span>
+          }
+        </div>
+      }
+    </div>
+  </section>
+</div>

@@ -9,19 +9,21 @@
     </div>
 
     <div class="shell__actions">
-      <button type="button" class="icon-button" aria-label="Notifications">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path
-            d="M6 8a6 6 0 1 1 12 0c0 3.6 1 5.4 1.6 6.2a1 1 0 0 1-.8 1.6H5.2a1 1 0 0 1-.8-1.6C5 13.4 6 11.6 6 8Z"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path d="M9.5 18a2.5 2.5 0 0 0 5 0" stroke-linecap="round" />
-        </svg>
-        @if (notificationCount() > 0) {
-          <span class="icon-button__badge">{{ notificationCount() }}</span>
-        }
-      </button>
+      @if (showNotifications()) {
+        <button type="button" class="icon-button" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M6 8a6 6 0 1 1 12 0c0 3.6 1 5.4 1.6 6.2a1 1 0 0 1-.8 1.6H5.2a1 1 0 0 1-.8-1.6C5 13.4 6 11.6 6 8Z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M9.5 18a2.5 2.5 0 0 0 5 0" stroke-linecap="round" />
+          </svg>
+          @if (notificationCount() > 0) {
+            <span class="icon-button__badge">{{ notificationCount() }}</span>
+          }
+        </button>
+      }
 
       <div class="user-chip">
         <span class="user-chip__avatar">{{ userInitial }}</span>

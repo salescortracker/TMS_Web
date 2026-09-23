@@ -1,0 +1,152 @@
+<div class="dashboard">
+  <app-clock-card />
+
+  <div class="timesheet-toolbar">
+    <div class="week-nav">
+      <button type="button" class="round-btn" disabled aria-label="Previous week">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m15 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+      <h1>{{ weekLabel }}</h1>
+      <button type="button" class="round-btn" disabled aria-label="Next week">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m9 6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="pill-row">
+      <span class="stat-pill stat-pill--success">{{ approvedCount() }} approved</span>
+      <span class="stat-pill stat-pill--warning">{{ pendingCount() }} pending approval</span>
+      <span class="stat-pill stat-pill--danger">{{ rejectedCount() }} rejected</span>
+      <span class="stat-pill stat-pill--neutral">{{ savedCount() }} saved</span>
+      <span class="stat-pill stat-pill--neutral">{{ draftCount() }} drafts</span>
+    </div>
+  </div>
+
+  <p class="text-muted">
+    Enter each day, then use <strong>Save</strong> or <strong>Save as draft</strong> to keep
+    working on it, or <strong>Submit</strong> when it is done — you can edit a day until you
+    submit it. Your manager approves days one by one. You can also
+    <a class="link link--strong" routerLink="/candidate/upload-hours">upload your days from Excel</a>.
+  </p>
+
+  <section class="card">
+    @for (day of days(); track day.day; let i = $index) {
+      <div class="day-row">
+        <div class="day-row__main">
+          <div class="day-row__label">
+            <strong>{{ day.day }}</strong>
+            <span>{{ day.date }}</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label">Log-in</label>
+            <input
+              class="input-control"
+              type="time"
+              [value]="day.logIn"
+              [disabled]="!day.editable"
+              (input)="updateDay(i, 'logIn', $any($event.target).value)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Log-out</label>
+            <input
+              class="input-control"
+              type="time"
+              [value]="day.logOut"
+              [disabled]="!day.editable"
+              (input)="updateDay(i, 'logOut', $any($event.target).value)"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label">Break (min)</label>
+            <input
+              class="input-control"
+              type="number"
+              min="0"
+              [value]="day.breakMinutes"
+              [disabled]="!day.editable"
+              (input)="updateDay(i, 'breakMinutes', $any($event.target).valueAsNumber || 0)"
+            />
+          </div>
+
+          <span class="day-row__hours">{{ hoursDisplay(day) }}</span>
+
+          <span
+            class="badge"
+            [class.badge--neutral]="
+              day.status === 'Draft' || day.status === 'Not entered' || day.status === 'Upcoming' || day.status === 'Saved'
+            "
+            [class.badge--warning]="day.status === 'Pending'"
+            [class.badge--success]="day.status === 'Approved'"
+            [class.badge--danger]="day.status === 'Rejected'"
+            >{{ day.status }}</span
+          >
+
+          <button
+            type="button"
+            class="btn btn--primary btn--sm"
+            [disabled]="!isReadyToSubmit(day)"
+            (click)="submitDay(i)"
+          >
+            Submit day
+          </button>
+        </div>
+
+        <div class="day-row__fields">
+          <div class="field">
+            <label class="field__label">Task</label>
+            <input
+              class="input-control"
+              type="text"
+              placeholder="e.g. Development"
+              [value]="day.task"
+              [disabled]="!day.editable"
+              (input)="updateDay(i, 'task', $any($event.target).value)"
+            />
+          </div>
+          <div class="field">
+            <label class="field__label">Description</label>
+            <textarea
+              class="input-control"
+              rows="2"
+              placeholder="What did you work on?"
+              [disabled]="!day.editable"
+              (input)="updateDay(i, 'description', $any($event.target).value)"
+              >{{ day.description }}</textarea
+            >
+          </div>
+        </div>
+
+        <p class="day-row__hint">{{ hintFor(day) }}</p>
+      </div>
+    }
+
+    <div class="timesheet-footer">
+      <div class="timesheet-footer__progress">
+        <div class="timesheet-footer__progress-label">
+          <span>Weekly total</span>
+          <span>{{ weekLoggedHours().toFixed(2) }} / {{ weekTargetHours }} hrs</span>
+        </div>
+        <div class="progress">
+          <div class="progress__bar" [style.width.%]="weekProgressPercent()"></div>
+        </div>
+      </div>
+
+      <div class="timesheet-footer__actions">
+        <button type="button" class="btn btn--secondary" (click)="saveAsDraft()">
+          Save as draft
+        </button>
+        <button type="button" class="btn btn--secondary" (click)="save()">Save</button>
+        <button type="button" class="btn btn--primary" (click)="submitReady()">
+          Submit ({{ readyToSubmitCount() }} ready days)
+        </button>
+      </div>
+    </div>
+  </section>
+</div>

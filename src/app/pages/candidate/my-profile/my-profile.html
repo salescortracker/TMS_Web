@@ -1,0 +1,86 @@
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>My profile</h1>
+      <p class="text-muted">Keep your personal details up to date.</p>
+    </div>
+  </div>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
+    <div class="form-grid">
+      <div class="field">
+        <label class="field__label" for="firstName">First name</label>
+        <input id="firstName" class="input-control" type="text" formControlName="firstName" />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="lastName">Last name</label>
+        <input id="lastName" class="input-control" type="text" formControlName="lastName" />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="dateOfBirth">Date of birth</label>
+        <input
+          id="dateOfBirth"
+          class="input-control"
+          type="text"
+          placeholder="MM/DD/YYYY"
+          formControlName="dateOfBirth"
+        />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="joiningDate">Joining date</label>
+        <input
+          id="joiningDate"
+          class="input-control"
+          type="text"
+          placeholder="MM/DD/YYYY"
+          formControlName="joiningDate"
+        />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="phoneNumber">Phone number</label>
+        <div class="phone-group">
+          <span class="phone-group__prefix">{{ form.controls.dialCode.value }}</span>
+          <input
+            id="phoneNumber"
+            class="input-control"
+            type="tel"
+            formControlName="phoneNumber"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="email">Email ID</label>
+        <input id="email" class="input-control" type="email" formControlName="email" />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="team">Team</label>
+        <select id="team" class="input-control" formControlName="team" (change)="onTeamChange()">
+          @for (team of teamOptions; track team.value) {
+            <option [value]="team.value">{{ team.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="companyName">Company name</label>
+        <select id="companyName" class="input-control" formControlName="companyName">
+          <option value="Cortracker Inc">Cortracker Inc</option>
+        </select>
+      </div>
+    </div>
+
+    @if (statusMessage()) {
+      <p class="form-note">{{ statusMessage() }}</p>
+    }
+
+    <div class="form-actions form-actions--start">
+      <button type="submit" class="btn btn--primary">Save changes</button>
+    </div>
+  </form>
+</div>

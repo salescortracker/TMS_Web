@@ -1,0 +1,45 @@
+<div class="clock-card">
+  <div class="clock-card__main">
+    <div class="clock-card__left">
+      <span class="clock-card__date">{{ formattedDate() }}</span>
+      <div class="clock-card__time">{{ formattedTime() }}</div>
+      <span class="badge badge--dark">{{ statusLabel() }}</span>
+    </div>
+
+    <div class="clock-card__stats">
+      <div class="clock-stat">
+        <span class="clock-stat__label">Clock in</span>
+        <span class="clock-stat__value">{{ clockInDisplay() }}</span>
+      </div>
+      <div class="clock-stat">
+        <span class="clock-stat__label">Clock out</span>
+        <span class="clock-stat__value">{{ clockOutDisplay() }}</span>
+      </div>
+      <div class="clock-stat">
+        <span class="clock-stat__label">Break total (0)</span>
+        <span class="clock-stat__value">0m</span>
+      </div>
+      <div class="clock-stat">
+        <span class="clock-stat__label">Worked so far</span>
+        <span class="clock-stat__value">{{ workedSoFarDisplay() }}</span>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn--primary clock-card__action" (click)="toggleClock()">
+      {{ clockButtonLabel() }}
+    </button>
+  </div>
+
+  <div class="clock-card__footer">
+    <span
+      >Clock times fill today's Log-in, Log-out and Break in your timesheet. A break over 1 hour
+      alerts you and your administrator.</span
+    >
+    <span
+      >Demo:
+      <a class="link" href="javascript:void(0)" (click)="skipAhead15Minutes()"
+        >skip ahead 15 min</a
+      ></span
+    >
+  </div>
+</div>

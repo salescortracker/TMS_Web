@@ -1,0 +1,307 @@
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>Roles &amp; access</h1>
+      <p class="text-muted">
+        Create users and roles, choose which menus each role sees and what it is allowed to do.
+        Changes apply immediately.
+      </p>
+    </div>
+  </div>
+
+  <div class="people-grid">
+    <section class="card roster-card">
+      <div class="roster-card__header">
+        <span class="eyebrow">Roles</span>
+        <button type="button" class="btn btn--primary btn--sm" (click)="addNewRole()">
+          + New role
+        </button>
+      </div>
+
+      <div class="roster-list">
+        @for (role of roles(); track role.id) {
+          <button
+            type="button"
+            class="roster-item"
+            [class.roster-item--active]="role.id === selectedRole().id"
+            (click)="selectRole(role.id)"
+          >
+            <span class="roster-item__info">
+              <strong
+                >{{ role.name }}
+                @if (role.builtIn) {
+                  <span class="tag-built-in">Built-in</span>
+                }
+              </strong>
+              <span
+                >{{ peopleCountFor(role.id) }} people · {{ role.menuKeys.length }} menus</span
+              >
+            </span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <div class="detail-stack">
+      <section class="card detail-card">
+        <div class="detail-card__header">
+          <h2>{{ selectedRole().name }}</h2>
+          @if (selectedRole().builtIn) {
+            <span class="pill-note">Fixed — cannot be changed</span>
+          }
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label">Role name</label>
+            <input
+              class="input-control"
+              type="text"
+              [value]="selectedRole().name"
+              [disabled]="selectedRole().builtIn"
+              (input)="updateRoleName($any($event.target).value)"
+            />
+          </div>
+          <div class="field">
+            <label class="field__label">Description</label>
+            <input
+              class="input-control"
+              type="text"
+              [value]="selectedRole().description"
+              [disabled]="selectedRole().builtIn"
+              (input)="updateRoleDescription($any($event.target).value)"
+            />
+          </div>
+        </div>
+
+        <div class="section-label-row">
+          <h3>Menus</h3>
+          <span>what this role can open</span>
+        </div>
+        <div class="check-grid">
+          @for (menu of allMenus; track menu.key) {
+            <label class="check-card">
+              <input
+                type="checkbox"
+                [checked]="selectedRole().menuKeys.includes(menu.key)"
+                [disabled]="selectedRole().builtIn"
+                (change)="toggleMenu(menu.key)"
+              />
+              <span>
+                <span class="check-card__title">{{ menu.label }}</span>
+                <span class="check-card__desc">{{ menu.description }}</span>
+              </span>
+            </label>
+          }
+        </div>
+
+        <div class="section-label-row">
+          <h3>Permissions</h3>
+          <span>what this role can do</span>
+        </div>
+        <div class="check-grid">
+          @for (permission of allPermissions; track permission.key) {
+            <label class="check-card">
+              <input
+                type="checkbox"
+                [checked]="selectedRole().permissionKeys.includes(permission.key)"
+                [disabled]="selectedRole().builtIn"
+                (change)="togglePermission(permission.key)"
+              />
+              <span>
+                <span class="check-card__title">{{ permission.label }}</span>
+                <span class="check-card__desc">{{ permission.description }}</span>
+              </span>
+            </label>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="approvals__header">
+          <div>
+            <h2>People</h2>
+            <p class="text-muted">
+              Create users, change their role, deactivate accounts or reset passwords. Every
+              change is recorded in the activity log.
+            </p>
+          </div>
+          <button type="button" class="btn btn--primary" (click)="openAddUser()">
+            + Add user
+          </button>
+        </div>
+
+        @if (isAddingUser()) {
+          <div class="add-user-form">
+            <div class="form-grid">
+              <div class="field">
+                <label class="field__label">Name</label>
+                <input
+                  class="input-control"
+                  type="text"
+                  placeholder="Full name"
+                  [value]="newUserName()"
+                  (input)="setNewUserName($any($event.target).value)"
+                />
+              </div>
+              <div class="field">
+                <label class="field__label">Email</label>
+                <input
+                  class="input-control"
+                  type="email"
+                  placeholder="name@cortracker360.com"
+                  [value]="newUserEmail()"
+                  (input)="setNewUserEmail($any($event.target).value)"
+                />
+              </div>
+              <div class="field">
+                <label class="field__label">Role</label>
+                <select
+                  class="input-control"
+                  [value]="newUserRoleId()"
+                  (change)="setNewUserRoleId($any($event.target).value)"
+                >
+                  @for (role of assignableRoles(); track role.id) {
+                    <option [value]="role.id">{{ role.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            @if (addUserError()) {
+              <p class="form-error">{{ addUserError() }}</p>
+            }
+
+            <div class="form-actions">
+              <button type="button" class="btn btn--secondary" (click)="cancelAddUser()">
+                Cancel
+              </button>
+              <button type="button" class="btn btn--primary" (click)="saveNewUser()">
+                Add user
+              </button>
+            </div>
+          </div>
+        }
+
+        <div class="tab-row">
+          <button
+            type="button"
+            class="nav-tab"
+            [class.nav-tab--active]="peopleTab() === 'Staff'"
+            (click)="setPeopleTab('Staff')"
+          >
+            Staff ({{ staffAccounts().length }})
+          </button>
+          <button
+            type="button"
+            class="nav-tab"
+            [class.nav-tab--active]="peopleTab() === 'Candidates'"
+            (click)="setPeopleTab('Candidates')"
+          >
+            Candidates ({{ candidateAccounts().length }})
+          </button>
+        </div>
+
+        <div class="table-scroll">
+          @if (peopleTab() === 'Staff') {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (account of staffAccounts(); track account.id) {
+                  <tr>
+                    <td>
+                      <div class="applicant-cell">
+                        <span class="user-chip__avatar">{{ initials(account.name) }}</span>
+                        <strong>{{ account.name }}</strong>
+                      </div>
+                    </td>
+                    <td>{{ account.email }}</td>
+                    <td>
+                      <select
+                        class="input-control"
+                        [value]="account.roleId"
+                        [disabled]="account.isCurrentUser"
+                        (change)="setStaffRole(account.id, $any($event.target).value)"
+                      >
+                        @for (role of assignableRoles(); track role.id) {
+                          <option [value]="role.id">{{ role.name }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td>
+                      <label class="status-cell">
+                        <span class="switch">
+                          <input
+                            type="checkbox"
+                            [checked]="account.active"
+                            [disabled]="account.isCurrentUser"
+                            (change)="toggleStaffActive(account.id)"
+                          />
+                          <span class="switch__track"></span>
+                          <span class="switch__thumb"></span>
+                        </span>
+                        {{ account.active ? (account.isCurrentUser ? 'Active (you)' : 'Active') : 'Inactive' }}
+                      </label>
+                    </td>
+                    <td><a class="link link--strong" href="javascript:void(0)">Reset password</a></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (account of candidateAccounts(); track account.id) {
+                  <tr>
+                    <td>
+                      <div class="applicant-cell">
+                        <span class="user-chip__avatar">{{ initials(account.name) }}</span>
+                        <strong>{{ account.name }}</strong>
+                      </div>
+                    </td>
+                    <td>{{ account.email }}</td>
+                    <td>Candidate</td>
+                    <td>
+                      <label class="status-cell">
+                        <span class="switch">
+                          <input
+                            type="checkbox"
+                            [checked]="account.active"
+                            (change)="toggleCandidateActive(account.id)"
+                          />
+                          <span class="switch__track"></span>
+                          <span class="switch__thumb"></span>
+                        </span>
+                        {{ account.active ? 'Active' : 'Inactive' }}
+                      </label>
+                    </td>
+                    <td><a class="link link--strong" href="javascript:void(0)">Reset password</a></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

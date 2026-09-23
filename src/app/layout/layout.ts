@@ -19,6 +19,7 @@ export class Layout {
   readonly userName = input('');
   readonly userRole = input('');
   readonly notificationCount = input(0);
+  readonly showNotifications = input(true);
 
   protected get userInitial(): string {
     return this.userName().trim().charAt(0).toUpperCase();

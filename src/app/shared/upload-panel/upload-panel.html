@@ -1,0 +1,79 @@
+<div class="upload-grid">
+  <section class="card">
+    <div class="step-card__header">
+      <span class="step-badge">1</span>
+      <h2>Get the template</h2>
+    </div>
+
+    <p class="text-muted">{{ columnsHint() }}</p>
+
+    <div class="button-row">
+      <button type="button" class="btn btn--secondary">Download template (.xlsx)</button>
+      <button type="button" class="btn btn--secondary">Sample with errors (.xlsx)</button>
+    </div>
+
+    <p class="eyebrow">Validation rules</p>
+    <ul class="rule-list">
+      @for (rule of rules(); track rule) {
+        <li>{{ rule }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="step-card__header">
+      <span class="step-badge">2</span>
+      <h2>Upload and validate</h2>
+    </div>
+
+    <div
+      class="dropzone"
+      [class.dropzone--active]="isDragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+    >
+      <svg
+        class="dropzone__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M12 16V4m0 0 4 4m-4-4-4 4" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round" />
+      </svg>
+      <p>Drag an .xlsx file here</p>
+      <button type="button" class="btn btn--primary" (click)="fileInput.click()">
+        Choose file
+      </button>
+      <input
+        #fileInput
+        type="file"
+        accept=".xlsx"
+        class="dropzone__input"
+        (change)="onFileSelected($event)"
+      />
+    </div>
+
+    @if (selectedFileName()) {
+      <p class="form-note">Selected: {{ selectedFileName() }}</p>
+    }
+
+    <p class="text-muted">
+      No file handy? Try the built-in data:
+      <a
+        class="link link--strong"
+        href="javascript:void(0)"
+        (click)="useBuiltInSample('valid-sample.xlsx')"
+        >Valid sample</a
+      >
+      <a
+        class="link link--strong"
+        href="javascript:void(0)"
+        (click)="useBuiltInSample('sample-with-errors.xlsx')"
+        >Sample with errors</a
+      >
+    </p>
+  </section>
+</div>
