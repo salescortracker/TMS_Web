@@ -13,8 +13,34 @@ export const routes: Routes = [
   },
   {
     path: 'super-admin',
-    loadComponent: () => import('./pages/super-admin/super-admin').then((m) => m.SuperAdmin),
+    loadComponent: () =>
+      import('./pages/super-admin/super-admin-shell').then((m) => m.SuperAdminShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/super-admin/dashboard/dashboard').then((m) => m.Dashboard),
+      },
+      {
+        path: 'onboarding',
+        loadComponent: () =>
+          import('./pages/super-admin/onboarding/onboarding-approvals').then(
+            (m) => m.OnboardingApprovals,
+          ),
+      },
+      {
+        path: 'timesheet-approvals',
+        loadComponent: () =>
+          import('./pages/super-admin/timesheet-approvals/timesheet-approvals').then(
+            (m) => m.TimesheetApprovals,
+          ),
+      },
+    ],
   },
+  // Legacy links from before the nested /super-admin/* routing existed.
+  { path: 'onboarding-approvals', redirectTo: 'super-admin/onboarding' },
+  { path: 'timesheet-approvals', redirectTo: 'super-admin/timesheet-approvals' },
   {
     path: 'super-admin-manager',
     loadComponent: () =>

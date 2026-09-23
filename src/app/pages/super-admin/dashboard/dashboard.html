@@ -1,0 +1,176 @@
+  <div class="dashboard">
+    <div class="dashboard__heading">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="text-muted">
+          Daily timesheets for the week of Sep 21 – Sep 27, 2026 — All companies and teams.
+        </p>
+      </div>
+      <div class="dashboard__filters">
+        <select class="input-control">
+          <option>All companies</option>
+        </select>
+        <select class="input-control">
+          <option>All teams (India and USA)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      @for (card of statCards; track card.label) {
+        <div class="stat-card" [class.stat-card--highlight]="card.highlight">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__value {{ toneClass('stat-card__value', card.tone) }}">{{
+            card.value
+          }}</span>
+        </div>
+      }
+    </div>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>By company and team</h2>
+        <span class="section-header__hint">Compare India and USA, and each company, side by side</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Company · Team</th>
+              <th>Candidates</th>
+              <th>Clocked in</th>
+              <th>Submitted</th>
+              <th>Pending</th>
+              <th>Approved</th>
+              <th>Rejected</th>
+              <th>Not submitted</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of companyTeamRows; track row.name) {
+              <tr>
+                <td class="cell--strong">{{ row.name }}</td>
+                <td>{{ row.candidates }}</td>
+                <td>{{ row.clockedIn }}</td>
+                <td>{{ row.submitted }}</td>
+                <td class="cell--warning">{{ row.pending }}</td>
+                <td class="cell--success">{{ row.approved }}</td>
+                <td [class]="rejectedClass(row.rejected)">{{ row.rejected }}</td>
+                <td>{{ row.notSubmitted }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>Live attendance today</h2>
+        <span class="section-header__hint"
+          >From candidates' Clock in, Break in, Break out and Clock out</span
+        >
+      </div>
+
+      <div class="attendance-list">
+        @for (row of attendanceRows; track row.name) {
+          <div class="attendance-row">
+            <div class="attendance-row__who">
+              <strong>{{ row.name }}</strong>
+              <span>{{ row.team }}</span>
+            </div>
+            <span class="attendance-row__time">{{ row.timeRange }}</span>
+            <span
+              class="attendance-row__break"
+              [class.attendance-row__break--alert]="row.breakAlert"
+              >{{ row.breakLabel }}</span
+            >
+            <span class="badge {{ toneClass('badge', row.statusTone) }}">{{ row.status }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="dashboard-columns">
+      <section class="card">
+        <div class="section-header">
+          <h2>This week, day by day</h2>
+          <span class="legend">
+            <span class="legend__item"
+              ><span class="legend__dot legend__dot--success"></span>Approved</span
+            >
+            <span class="legend__item"
+              ><span class="legend__dot legend__dot--warning"></span>Pending</span
+            >
+            <span class="legend__item"
+              ><span class="legend__dot legend__dot--danger"></span>Rejected</span
+            >
+            <span class="legend__item"
+              ><span class="legend__dot legend__dot--neutral"></span>Not submitted</span
+            >
+          </span>
+        </div>
+
+        <div class="week-chart">
+          @for (segment of weekSegments; track segment.day) {
+            <div class="week-chart__col">
+              <span class="week-chart__total">{{ segment.total ?? '' }}</span>
+              <div class="week-chart__bar">
+                <span
+                  class="week-chart__segment week-chart__segment--danger"
+                  [style.height]="segmentHeight(segment.rejected, dayTotal(segment))"
+                ></span>
+                <span
+                  class="week-chart__segment week-chart__segment--warning"
+                  [style.height]="segmentHeight(segment.pending, dayTotal(segment))"
+                ></span>
+                <span
+                  class="week-chart__segment week-chart__segment--success"
+                  [style.height]="segmentHeight(segment.approved, dayTotal(segment))"
+                ></span>
+              </div>
+              <span class="week-chart__day">{{ segment.day }}</span>
+              <span class="week-chart__note">{{ segment.note }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Waiting for a manager</h2>
+          <a class="link link--strong" href="javascript:void(0)">Open approvals</a>
+        </div>
+
+        <div class="waiting-list">
+          @for (item of waitingItems; track item.name) {
+            <div class="waiting-row">
+              <div class="waiting-row__who">
+                <strong>{{ item.name }}</strong>
+                <span>since {{ item.since }}</span>
+              </div>
+              <span class="badge badge--warning">{{ item.days }} days</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>Recent activity</h2>
+        <a class="link link--strong" href="javascript:void(0)">View all</a>
+      </div>
+
+      <div class="activity-list">
+        @for (entry of recentActivity; track entry.time + entry.actor) {
+          <div class="activity-row">
+            <span class="activity-row__dot {{ toneClass('activity-row__dot', entry.tone) }}"></span>
+            <p class="activity-row__text"><strong>{{ entry.actor }}</strong> {{ entry.action }}</p>
+            <span class="activity-row__time">{{ entry.time }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
