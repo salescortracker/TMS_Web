@@ -170,6 +170,16 @@ input {
   transform: translateY(1px);
 }
 
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+}
+
+.btn--secondary:hover {
+  background: var(--color-surface-alt);
+}
+
 .btn--block {
   width: 100%;
 }
@@ -266,6 +276,111 @@ input {
   color: #b3261e;
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+.form-note {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+/* Standalone input/select control (outside an .input-group icon wrapper) */
+.input-control {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-control::placeholder {
+  color: #b7b5bd;
+}
+
+.input-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(224, 41, 61, 0.12);
+}
+
+select.input-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7a86' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  padding-right: 2.25rem;
+}
+
+/* Phone number field: fixed dial-code prefix + number input */
+.phone-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.phone-group__prefix {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+  color: var(--color-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.phone-group .input-control {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- Alerts ---------- */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.alert p {
+  margin: 0;
+}
+
+.alert__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.alert--warning {
+  background: #fdecec;
+  color: #8a2a2a;
+}
+
+.alert--warning .alert__icon {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.alert--warning strong {
+  color: var(--color-primary-dark);
 }
 
 /* ---------- Divider ---------- */
@@ -549,6 +664,75 @@ input {
   grid-column: 2 / span 1;
 }
 
+/* ---------- Generic surface card ---------- */
+.card {
+  padding: 1.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- Top bar (onboarding / secondary pages) ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.topbar__accent {
+  height: 3px;
+  background: var(--color-primary);
+}
+
+.topbar__aside {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.brand__tagline {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+/* ---------- Simple form page (onboarding, registration, ...) ---------- */
+.form-page {
+  min-height: 100dvh;
+  background: var(--color-surface-alt);
+}
+
+.form-page__content {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+.form-page__card {
+  margin-top: 1.75rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
 /* ---------- Generic placeholder page shell (role dashboards) ---------- */
 .page-shell {
   min-height: 100dvh;
@@ -573,6 +757,23 @@ input {
 
   .timesheet-card {
     max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 }
 

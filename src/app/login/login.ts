@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface DemoRole {
   label: string;
@@ -37,7 +37,7 @@ const DEMO_ROLES: DemoRole[] = [
 ];
 
 @Component({
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   selector: 'app-login',
   templateUrl: './login.html',
 })

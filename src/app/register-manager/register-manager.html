@@ -1,0 +1,117 @@
+<div class="form-page">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__logo">C</span>
+      <span>
+        <span class="brand__name">Cortracker Inc</span>
+        <span class="brand__tagline">Timesheet Management System</span>
+      </span>
+    </div>
+    <p class="topbar__aside">
+      Already onboarded? <a class="link link--strong" routerLink="/login">Log in</a>
+    </p>
+  </header>
+  <div class="topbar__accent"></div>
+
+  <main class="form-page__content">
+    <p class="eyebrow">Resource Manager</p>
+    <h1>Resource Manager registration</h1>
+    <p class="text-muted">
+      Resource Managers get view-only access. {{ seatsAvailable }} of {{ seatsTotal }}
+      self-registration seats are still open; a Super Admin can also register managers directly.
+    </p>
+
+    <form class="card form-page__card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label" for="firstName">First name</label>
+          <input
+            id="firstName"
+            class="input-control"
+            type="text"
+            placeholder="Jordan"
+            formControlName="firstName"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="lastName">Last name</label>
+          <input
+            id="lastName"
+            class="input-control"
+            type="text"
+            placeholder="Alvarez"
+            formControlName="lastName"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="team">Team</label>
+          <select
+            id="team"
+            class="input-control"
+            formControlName="team"
+            (change)="onTeamChange()"
+          >
+            @for (team of teamOptions; track team.value) {
+              <option [value]="team.value">{{ team.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="companyName">Company name</label>
+          <select id="companyName" class="input-control" formControlName="companyName">
+            <option value="Cortracker Inc">Cortracker Inc</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="phoneNumber">Phone number</label>
+          <div class="phone-group">
+            <span class="phone-group__prefix">{{ form.controls.dialCode.value }}</span>
+            <input
+              id="phoneNumber"
+              class="input-control"
+              type="tel"
+              placeholder="234-567-8910"
+              formControlName="phoneNumber"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="email">Email ID</label>
+          <input
+            id="email"
+            class="input-control"
+            type="email"
+            placeholder="jordan.alvarez&#64;cortracker360.com"
+            formControlName="email"
+          />
+        </div>
+      </div>
+
+      <div class="alert alert--warning">
+        <span class="alert__icon">!</span>
+        <p>
+          This submission needs approval from
+          @for (approver of approvers; track approver; let last = $last) {
+            <strong>{{ approver }}</strong
+            >{{ last ? '' : ', ' }}
+          }
+          before your account is activated.
+        </p>
+      </div>
+
+      @if (statusMessage()) {
+        <p class="form-note">{{ statusMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn btn--secondary" (click)="saveDraft()">Save draft</button>
+        <button type="submit" class="btn btn--primary">Submit for approval</button>
+      </div>
+    </form>
+  </main>
+</div>

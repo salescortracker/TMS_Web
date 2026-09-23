@@ -3,6 +3,15 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./login/login').then((m) => m.Login) },
   {
+    path: 'onboard',
+    loadComponent: () => import('./onboarding/onboarding').then((m) => m.Onboarding),
+  },
+  {
+    path: 'register-manager',
+    loadComponent: () =>
+      import('./register-manager/register-manager').then((m) => m.RegisterManager),
+  },
+  {
     path: 'super-admin',
     loadComponent: () => import('./pages/super-admin/super-admin').then((m) => m.SuperAdmin),
   },
