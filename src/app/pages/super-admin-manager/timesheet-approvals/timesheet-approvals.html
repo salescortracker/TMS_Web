@@ -1,0 +1,169 @@
+  <div class="approvals">
+    <div class="approvals__header">
+      <div>
+        <h1>Timesheet approvals</h1>
+        <p class="text-muted">
+          Candidates submit each day. Approve a day, reject it with a reason, or open it to
+          correct the times.
+        </p>
+      </div>
+      <button type="button" class="btn btn--primary" (click)="approveAllInView()">
+        Approve all in view ({{ filteredEntries().length }})
+      </button>
+    </div>
+
+    <div class="approvals__toolbar">
+      <div class="tab-row">
+        <button
+          type="button"
+          class="nav-tab"
+          [class.nav-tab--active]="activeTab() === 'Pending'"
+          (click)="setTab('Pending')"
+        >
+          Pending approval ({{ pendingCount() }})
+        </button>
+        <button
+          type="button"
+          class="nav-tab"
+          [class.nav-tab--active]="activeTab() === 'Flagged'"
+          (click)="setTab('Flagged')"
+        >
+          Flagged ({{ flaggedCount() }})
+        </button>
+        <button
+          type="button"
+          class="nav-tab"
+          [class.nav-tab--active]="activeTab() === 'Approved'"
+          (click)="setTab('Approved')"
+        >
+          Approved ({{ approvedCount() }})
+        </button>
+        <button
+          type="button"
+          class="nav-tab"
+          [class.nav-tab--active]="activeTab() === 'Rejected'"
+          (click)="setTab('Rejected')"
+        >
+          Rejected ({{ rejectedCount() }})
+        </button>
+        <button
+          type="button"
+          class="nav-tab"
+          [class.nav-tab--active]="activeTab() === 'All'"
+          (click)="setTab('All')"
+        >
+          All ({{ allCount() }})
+        </button>
+      </div>
+
+      <div class="approvals__filters">
+        <select class="input-control">
+          <option>All companies</option>
+        </select>
+        <select class="input-control">
+          <option>All teams (India and USA)</option>
+        </select>
+        <input
+          class="input-control"
+          type="text"
+          placeholder="Search candidate or email"
+          [value]="searchQuery()"
+          (input)="onSearchInput($any($event.target).value)"
+        />
+        <select class="input-control">
+          <option>All weeks</option>
+        </select>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="cell--checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="allVisibleSelected()"
+                  (change)="toggleSelectAllVisible()"
+                />
+              </th>
+              <th>Candidate</th>
+              <th>Day</th>
+              <th>Task and description</th>
+              <th>Hours</th>
+              <th>Checks</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of filteredEntries(); track entry.id) {
+              <tr>
+                <td class="cell--checkbox">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(entry.id)"
+                    (change)="toggleSelected(entry.id)"
+                  />
+                </td>
+                <td>
+                  <div class="applicant-cell">
+                    <span class="user-chip__avatar">{{ initials(entry.candidate) }}</span>
+                    <span class="applicant-cell__info">
+                      <strong>{{ entry.candidate }}</strong>
+                      <span>{{ entry.company }} · {{ entry.team }}</span>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="applicant-cell__type">{{ entry.day }}</span>
+                  <span class="applicant-cell__company">{{ entry.timeRange }}</span>
+                </td>
+                <td>
+                  <span class="applicant-cell__type">{{ entry.task }}</span>
+                  <span class="applicant-cell__company">{{ entry.description }}</span>
+                </td>
+                <td>
+                  <span class="applicant-cell__type">{{ entry.hours }}</span>
+                  <span class="applicant-cell__company">{{ entry.weekProgress }}</span>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--success]="entry.checks === 'Clean'"
+                    [class.badge--danger]="entry.checks === 'Flagged'"
+                    [title]="entry.flagReason ?? ''"
+                    >{{ entry.checks }}</span
+                  >
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--warning]="entry.decision === 'Pending'"
+                    [class.badge--success]="entry.decision === 'Approved'"
+                    [class.badge--danger]="entry.decision === 'Rejected'"
+                    >{{ entry.decision }}</span
+                  >
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <a class="link link--strong" href="javascript:void(0)">Review / edit</a>
+                    @if (entry.decision === 'Pending') {
+                      <button
+                        type="button"
+                        class="btn btn--primary btn--sm"
+                        (click)="approve(entry.id)"
+                      >
+                        Approve
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>

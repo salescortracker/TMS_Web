@@ -1,0 +1,218 @@
+<div class="approvals">
+  <div class="approvals__toolbar">
+    <div class="tab-row">
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'Candidates'"
+        (click)="setTab('Candidates')"
+      >
+        Candidates ({{ candidates.length }})
+      </button>
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'Staff'"
+        (click)="setTab('Staff')"
+      >
+        Staff ({{ staff.length }})
+      </button>
+    </div>
+
+    <div class="approvals__filters">
+      <select class="input-control">
+        <option>All companies</option>
+      </select>
+      <select class="input-control">
+        <option>All teams (India and USA)</option>
+      </select>
+    </div>
+  </div>
+
+  @if (activeTab() === 'Candidates') {
+    <div class="people-grid">
+      <section class="card roster-card">
+        <h2>Candidate roster</h2>
+        <input
+          class="input-control"
+          type="text"
+          placeholder="Search candidates"
+          [value]="candidateSearch()"
+          (input)="onCandidateSearch($any($event.target).value)"
+        />
+
+        <div class="roster-list">
+          @for (candidate of filteredCandidates(); track candidate.id) {
+            <button
+              type="button"
+              class="roster-item"
+              [class.roster-item--active]="candidate.id === selectedCandidate().id"
+              (click)="selectCandidate(candidate.id)"
+            >
+              <span class="user-chip__avatar">{{ initials(candidate.name) }}</span>
+              <span class="roster-item__info">
+                <strong>{{ candidate.name }}</strong>
+                <span>{{ candidate.team }} · since {{ candidate.since }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <div class="detail-stack">
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <span class="user-chip__avatar avatar--lg">{{
+              initials(selectedCandidate().name)
+            }}</span>
+            <span class="detail-card__identity">
+              <h2>{{ selectedCandidate().name }}</h2>
+              <span class="text-muted">{{ selectedCandidate().email }}</span>
+            </span>
+            <span class="pill-note">Details from onboarding · view only</span>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="field-grid">
+            <div class="field-grid__item">
+              <span class="eyebrow">Phone</span>
+              <span class="field-grid__value">{{ selectedCandidate().phone }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Company</span>
+              <span class="field-grid__value">{{ selectedCandidate().company }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Team</span>
+              <span class="field-grid__value">{{ selectedCandidate().team }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Employed since (joining date)</span>
+              <span class="field-grid__value">{{ selectedCandidate().since }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Date of birth</span>
+              <span class="field-grid__value">{{ selectedCandidate().dateOfBirth }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Onboarded on</span>
+              <span class="field-grid__value">{{ selectedCandidate().onboardedOn }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Onboarding approved by</span>
+              <span class="field-grid__value">{{ selectedCandidate().approvedBy }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Account status</span>
+              <span class="field-grid__value">{{ selectedCandidate().accountStatus }}</span>
+            </div>
+            <div class="field-grid__item">
+              <span class="eyebrow">Timesheets submitted</span>
+              <span class="field-grid__value">{{ selectedCandidate().timesheetsSummary }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Submission timeline — which months were submitted</h2>
+          <div class="timeline-list">
+            @for (month of selectedCandidate().timeline; track month.label) {
+              <div class="timeline-item">
+                <span
+                  class="timeline-item__dot"
+                  [class.timeline-item__dot--success]="month.tone === 'success'"
+                  [class.timeline-item__dot--warning]="month.tone === 'warning'"
+                ></span>
+                <div class="timeline-item__content">
+                  <strong>{{ month.label }}</strong>
+                  <p>
+                    {{ month.daysSubmitted }} days submitted · {{ month.hours }} ·
+                    {{ month.approved }} approved
+                    @if (month.pending > 0) {
+                      · {{ month.pending }} pending
+                    }
+                  </p>
+                  <span class="timeline-item__meta"
+                    >Last submission {{ month.lastSubmission }}</span
+                  >
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    </div>
+  } @else {
+    <div class="people-grid">
+      <section class="card roster-card">
+        <h2>Staff roster</h2>
+        <input
+          class="input-control"
+          type="text"
+          placeholder="Search staff"
+          [value]="staffSearch()"
+          (input)="onStaffSearch($any($event.target).value)"
+        />
+
+        <div class="roster-list">
+          @for (member of filteredStaff(); track member.id) {
+            <button
+              type="button"
+              class="roster-item"
+              [class.roster-item--active]="member.id === selectedStaffMember().id"
+              (click)="selectStaff(member.id)"
+            >
+              <span class="user-chip__avatar">{{ initials(member.name) }}</span>
+              <span class="roster-item__info">
+                <strong>{{ member.name }}</strong>
+                <span>{{ member.role }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="card detail-card">
+        <div class="detail-card__header">
+          <span class="user-chip__avatar avatar--lg">{{
+            initials(selectedStaffMember().name)
+          }}</span>
+          <span class="detail-card__identity">
+            <h2>{{ selectedStaffMember().name }}</h2>
+            <span class="text-muted">{{ selectedStaffMember().email }}</span>
+          </span>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <div class="field-grid">
+          <div class="field-grid__item">
+            <span class="eyebrow">Role</span>
+            <span class="field-grid__value">{{ selectedStaffMember().role }}</span>
+          </div>
+          <div class="field-grid__item">
+            <span class="eyebrow">Phone</span>
+            <span class="field-grid__value">{{ selectedStaffMember().phone }}</span>
+          </div>
+          <div class="field-grid__item">
+            <span class="eyebrow">Company</span>
+            <span class="field-grid__value">{{ selectedStaffMember().company }}</span>
+          </div>
+          <div class="field-grid__item">
+            <span class="eyebrow">Team</span>
+            <span class="field-grid__value">{{ selectedStaffMember().team }}</span>
+          </div>
+          <div class="field-grid__item">
+            <span class="eyebrow">Staff since</span>
+            <span class="field-grid__value">{{ selectedStaffMember().since }}</span>
+          </div>
+          <div class="field-grid__item">
+            <span class="eyebrow">Account status</span>
+            <span class="field-grid__value">{{ selectedStaffMember().accountStatus }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</div>

@@ -71,30 +71,187 @@ export const routes: Routes = [
       import('./pages/super-admin-manager/super-admin-manager-shell').then(
         (m) => m.SuperAdminManagerShell,
       ),
+    // Independent copies of the Super Admin pages — edit these freely without
+    // affecting /super-admin.
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
-        // Srikanth Boora is a second full Super Administrator account — same
-        // dashboard content as /super-admin, just a different signed-in user.
         path: 'dashboard',
         loadComponent: () =>
-          import('./pages/super-admin/dashboard/dashboard').then((m) => m.Dashboard),
+          import('./pages/super-admin-manager/dashboard/dashboard').then(
+            (m) => m.ManagerDashboard,
+          ),
+      },
+      {
+        path: 'onboarding',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/onboarding/onboarding-approvals').then(
+            (m) => m.ManagerOnboardingApprovals,
+          ),
+      },
+      {
+        path: 'timesheet-approvals',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/timesheet-approvals/timesheet-approvals').then(
+            (m) => m.ManagerTimesheetApprovals,
+          ),
+      },
+      {
+        path: 'timesheets',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/timesheets/timesheets').then(
+            (m) => m.ManagerTimesheets,
+          ),
+      },
+      {
+        path: 'bulk-upload',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/bulk-upload/bulk-upload').then(
+            (m) => m.ManagerBulkUpload,
+          ),
+      },
+      {
+        path: 'people',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/people/people').then((m) => m.ManagerPeople),
+      },
+      {
+        path: 'roles-access',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/roles-access/roles-access').then(
+            (m) => m.ManagerRolesAccess,
+          ),
+      },
+      {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./pages/super-admin-manager/activity-log/activity-log').then(
+            (m) => m.ManagerActivityLog,
+          ),
       },
     ],
   },
   {
     path: 'hr',
-    loadComponent: () => import('./pages/hr/hr').then((m) => m.Hr),
+    loadComponent: () => import('./pages/hr/hr-shell').then((m) => m.HrShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/hr/dashboard/dashboard').then((m) => m.HrDashboard),
+      },
+      {
+        path: 'onboarding',
+        loadComponent: () =>
+          import('./pages/hr/onboarding/onboarding-approvals').then(
+            (m) => m.HrOnboardingApprovals,
+          ),
+      },
+      {
+        path: 'timesheet-approvals',
+        loadComponent: () =>
+          import('./pages/hr/timesheet-approvals/timesheet-approvals').then(
+            (m) => m.HrTimesheetApprovals,
+          ),
+      },
+      {
+        path: 'timesheets',
+        loadComponent: () =>
+          import('./pages/hr/timesheets/timesheets').then((m) => m.HrTimesheets),
+      },
+      {
+        path: 'people',
+        loadComponent: () => import('./pages/hr/people/people').then((m) => m.HrPeople),
+      },
+      {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./pages/hr/activity-log/activity-log').then((m) => m.HrActivityLog),
+      },
+    ],
   },
   {
     path: 'editor-contributor',
     loadComponent: () =>
-      import('./pages/editor-contributor/editor-contributor').then((m) => m.EditorContributor),
+      import('./pages/editor-contributor/editor-contributor-shell').then(
+        (m) => m.EditorContributorShell,
+      ),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/editor-contributor/dashboard/dashboard').then(
+            (m) => m.EditorDashboard,
+          ),
+      },
+      {
+        path: 'timesheet-approvals',
+        loadComponent: () =>
+          import('./pages/editor-contributor/timesheet-approvals/timesheet-approvals').then(
+            (m) => m.EditorTimesheetApprovals,
+          ),
+      },
+      {
+        path: 'timesheets',
+        loadComponent: () =>
+          import('./pages/editor-contributor/timesheets/timesheets').then(
+            (m) => m.EditorTimesheets,
+          ),
+      },
+      {
+        path: 'bulk-upload',
+        loadComponent: () =>
+          import('./pages/editor-contributor/bulk-upload/bulk-upload').then(
+            (m) => m.EditorBulkUpload,
+          ),
+      },
+      {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./pages/editor-contributor/activity-log/activity-log').then(
+            (m) => m.EditorActivityLog,
+          ),
+      },
+    ],
   },
   {
     path: 'contributor-view',
     loadComponent: () =>
-      import('./pages/contributor-view/contributor-view').then((m) => m.ContributorView),
+      import('./pages/contributor-view/contributor-view-shell').then(
+        (m) => m.ContributorViewShell,
+      ),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/contributor-view/dashboard/dashboard').then(
+            (m) => m.ContributorViewDashboard,
+          ),
+      },
+      {
+        path: 'timesheet-approvals',
+        loadComponent: () =>
+          import('./pages/contributor-view/timesheet-approvals/timesheet-approvals').then(
+            (m) => m.ContributorViewTimesheetApprovals,
+          ),
+      },
+      {
+        path: 'timesheets',
+        loadComponent: () =>
+          import('./pages/contributor-view/timesheets/timesheets').then(
+            (m) => m.ContributorViewTimesheets,
+          ),
+      },
+      {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./pages/contributor-view/activity-log/activity-log').then(
+            (m) => m.ContributorViewActivityLog,
+          ),
+      },
+    ],
   },
   {
     path: 'candidate',
@@ -132,9 +289,26 @@ export const routes: Routes = [
   {
     path: 'resource-manager-view',
     loadComponent: () =>
-      import('./pages/resource-manager-view/resource-manager-view').then(
-        (m) => m.ResourceManagerView,
+      import('./pages/resource-manager-view/resource-manager-view-shell').then(
+        (m) => m.ResourceManagerViewShell,
       ),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/resource-manager-view/dashboard/dashboard').then(
+            (m) => m.ResourceManagerViewDashboard,
+          ),
+      },
+      {
+        path: 'timesheets',
+        loadComponent: () =>
+          import('./pages/resource-manager-view/timesheets/timesheets').then(
+            (m) => m.ResourceManagerViewTimesheets,
+          ),
+      },
+    ],
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' },

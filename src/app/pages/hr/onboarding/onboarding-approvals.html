@@ -1,0 +1,136 @@
+  <div class="approvals">
+    <div class="approvals__header">
+      <div>
+        <h1>Onboarding approvals</h1>
+        <p class="text-muted">
+          Approve or reject self-onboarded candidates and self-registered Resource Managers
+          ({{ seatsUsed }} of {{ seatsTotal }} self-registration seats used) before their access
+          is activated. Suspicious registrations are flagged.
+        </p>
+      </div>
+      <button type="button" class="btn btn--primary" (click)="approveAllPending()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m5 12 5 5L20 7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Approve all pending ({{ pendingCount() }})
+      </button>
+    </div>
+
+    <div class="tab-row">
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'Pending'"
+        (click)="setTab('Pending')"
+      >
+        Pending ({{ pendingCount() }})
+      </button>
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'Approved'"
+        (click)="setTab('Approved')"
+      >
+        Approved ({{ approvedCount() }})
+      </button>
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'Rejected'"
+        (click)="setTab('Rejected')"
+      >
+        Rejected ({{ rejectedCount() }})
+      </button>
+      <button
+        type="button"
+        class="nav-tab"
+        [class.nav-tab--active]="activeTab() === 'All'"
+        (click)="setTab('All')"
+      >
+        All ({{ allCount() }})
+      </button>
+    </div>
+
+    <section class="card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Type / Team</th>
+              <th>Submitted</th>
+              <th>Flag</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (applicant of filteredApplicants(); track applicant.id) {
+              <tr>
+                <td>
+                  <div class="applicant-cell">
+                    <span class="user-chip__avatar">{{ initials(applicant.name) }}</span>
+                    <span class="applicant-cell__info">
+                      <strong>{{ applicant.name }}</strong>
+                      <span>{{ applicant.email }} · {{ applicant.phone }}</span>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="applicant-cell__type">{{ applicant.type }} · {{ applicant.team }}</span>
+                  <span class="applicant-cell__company">{{ applicant.company }}</span>
+                </td>
+                <td>{{ applicant.submitted }}</td>
+                <td>
+                  @if (applicant.flag) {
+                    <span class="flag">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 3v18" stroke-linecap="round" />
+                        <path
+                          d="M5 4h11l-2.5 3.5L16 11H5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      {{ applicant.flag }}
+                    </span>
+                  }
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--warning]="applicant.status === 'Pending'"
+                    [class.badge--success]="applicant.status === 'Approved'"
+                    [class.badge--danger]="applicant.status === 'Rejected'"
+                    >{{ applicant.status }}</span
+                  >
+                </td>
+                <td>
+                  @if (applicant.status === 'Pending') {
+                    <div class="row-actions">
+                      <button
+                        type="button"
+                        class="btn btn--secondary btn--sm"
+                        (click)="reject(applicant.id)"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn--primary btn--sm"
+                        (click)="approve(applicant.id)"
+                      >
+                        Approve
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="text-muted">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>

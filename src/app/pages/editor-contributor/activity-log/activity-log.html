@@ -1,0 +1,100 @@
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>Activity log</h1>
+      <p class="text-muted">
+        A timeline of every submission, approval, edit and alert. Srikanth is notified of
+        timesheet changes.
+      </p>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <button
+      type="button"
+      class="nav-tab"
+      [class.nav-tab--active]="tab() === 'Activity'"
+      (click)="setTab('Activity')"
+    >
+      Activity
+    </button>
+    <button
+      type="button"
+      class="nav-tab"
+      [class.nav-tab--active]="tab() === 'Email alerts'"
+      (click)="setTab('Email alerts')"
+    >
+      Email alerts ({{ emailAlerts.length }})
+    </button>
+  </div>
+
+  @if (tab() === 'Activity') {
+    <div class="log-toolbar">
+      <div class="log-toolbar__chips">
+        @for (filter of filters; track filter) {
+          <button
+            type="button"
+            class="filter-chip"
+            [class.filter-chip--active]="activeFilter() === filter"
+            (click)="setFilter(filter)"
+          >
+            {{ filter }}
+          </button>
+        }
+      </div>
+      <input
+        class="input-control"
+        type="text"
+        placeholder="Search activity"
+        [value]="searchQuery()"
+        (input)="onSearchInput($any($event.target).value)"
+      />
+    </div>
+
+    <section class="card">
+      <div class="log-list">
+        @for (entry of filteredActivity(); track entry.timestamp + entry.actor) {
+          <div class="log-row">
+            <span
+              class="log-row__dot"
+              [class.log-row__dot--success]="entry.tone === 'success'"
+              [class.log-row__dot--warning]="entry.tone === 'warning'"
+              [class.log-row__dot--danger]="entry.tone === 'danger'"
+            ></span>
+            <div class="log-row__content">
+              <strong>{{ entry.actor }} {{ entry.action }}</strong>
+              @if (entry.description) {
+                <p>{{ entry.description }}</p>
+              }
+              <span class="log-row__meta">{{ entry.timestamp }}</span>
+            </div>
+          </div>
+        }
+
+        @if (filteredActivity().length === 0) {
+          <p class="text-muted">No activity matches this filter yet.</p>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="card">
+      <div class="log-list">
+        @for (alert of emailAlerts; track alert.timestamp + alert.recipient) {
+          <div class="log-row">
+            <span class="log-row__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <div class="log-row__content">
+              <strong>To {{ alert.recipient }}</strong>
+              <p>{{ alert.subject }}</p>
+              <span class="log-row__meta">Sent {{ alert.timestamp }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

@@ -1,0 +1,125 @@
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>Timesheets</h1>
+      <p class="text-muted">
+        Every candidate's submitted days for Sep 21 – Sep 27, 2026, in weekly or monthly totals —
+        All companies and teams.
+      </p>
+    </div>
+  </div>
+
+  <div class="approvals__filters">
+    <select class="input-control">
+      <option>All companies</option>
+    </select>
+    <select class="input-control">
+      <option>All teams (India and USA)</option>
+    </select>
+    <input
+      class="input-control"
+      type="text"
+      placeholder="Search candidate or company"
+      [value]="searchQuery()"
+      (input)="onSearchInput($any($event.target).value)"
+    />
+    <select class="input-control">
+      <option>Sep 21 – Sep 27, 2026</option>
+    </select>
+    <div class="segmented">
+      <button
+        type="button"
+        [class.segmented__button--active]="viewMode() === 'Weekly'"
+        class="segmented__button"
+        (click)="setViewMode('Weekly')"
+      >
+        Weekly
+      </button>
+      <button
+        type="button"
+        [class.segmented__button--active]="viewMode() === 'Monthly'"
+        class="segmented__button"
+        (click)="setViewMode('Monthly')"
+      >
+        Monthly
+      </button>
+    </div>
+    <button type="button" class="btn btn--secondary">Export Excel</button>
+  </div>
+
+  <div class="pill-row">
+    <span class="stat-pill stat-pill--neutral">{{ totals().submitted }} days submitted</span>
+    <span class="stat-pill stat-pill--success">{{ totals().approved }} approved</span>
+    <span class="stat-pill stat-pill--warning">{{ totals().pending }} pending</span>
+    <span class="stat-pill stat-pill--danger">{{ totals().rejected }} rejected</span>
+  </div>
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Company · Team</th>
+            <th>Candidates</th>
+            <th>Hours</th>
+            <th>Submitted</th>
+            <th>Approved</th>
+            <th>Pending</th>
+            <th>Rejected</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of teamSummaryRows; track row.name) {
+            <tr>
+              <td class="cell--strong">{{ row.name }}</td>
+              <td>{{ row.candidates }}</td>
+              <td class="cell--strong">{{ row.hours }}</td>
+              <td>{{ row.submitted }}</td>
+              <td class="cell--success">{{ row.approved }}</td>
+              <td class="cell--warning">{{ row.pending }}</td>
+              <td>{{ row.rejected }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Company · Team</th>
+            <th>Week hours</th>
+            <th>Submitted</th>
+            <th>Approved</th>
+            <th>Pending</th>
+            <th>Rejected</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredCandidateRows(); track row.name) {
+            <tr>
+              <td>
+                <div class="applicant-cell">
+                  <span class="user-chip__avatar">{{ initials(row.name) }}</span>
+                  <strong>{{ row.name }}</strong>
+                </div>
+              </td>
+              <td>{{ row.team }}</td>
+              <td class="cell--strong">{{ row.weekHours }}</td>
+              <td>{{ row.submitted }}</td>
+              <td class="cell--success">{{ row.approved }}</td>
+              <td class="cell--warning">{{ row.pending }}</td>
+              <td>{{ row.rejected }}</td>
+              <td><a class="link link--strong" href="javascript:void(0)">View</a></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
