@@ -1,94 +1,134 @@
-import { Component, OnDestroy, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, output, signal } from '@angular/core';
+import { errorMessage } from '../../../shared/api/api-helpers';
+import { CandidateApi, ClockState } from '../../../shared/api/candidate.api';
 
 @Component({
   imports: [],
   selector: 'app-clock-card',
   templateUrl: './clock-card.html',
 })
-export class ClockCard implements OnDestroy {
-  private readonly demoOffsetMs = signal(0);
+export class ClockCard implements OnInit, OnDestroy {
+  private readonly api = inject(CandidateApi);
   private readonly now = signal(new Date());
   private readonly tickHandle = setInterval(() => this.now.set(new Date()), 1000);
 
-  protected readonly displayNow = computed(
-    () => new Date(this.now().getTime() + this.demoOffsetMs()),
-  );
+  /** Tells the parent page to refresh its numbers after a clock action. */
+  readonly changed = output<void>();
 
-  protected readonly clockInAt = signal<Date | null>(null);
-  protected readonly clockOutAt = signal<Date | null>(null);
+  protected readonly state = signal<ClockState | null>(null);
+  protected readonly busy = signal(false);
+  protected readonly errorText = signal('');
 
-  protected readonly isClockedIn = computed(
-    () => this.clockInAt() !== null && this.clockOutAt() === null,
-  );
+  private readonly zone = computed(() => this.state()?.timeZoneId ?? undefined);
+
+  protected readonly status = computed(() => this.state()?.status ?? 'NotClockedIn');
 
   protected readonly statusLabel = computed(() => {
-    if (this.clockOutAt()) {
-      return 'Clocked out';
+    switch (this.status()) {
+      case 'Working':
+        return 'Clocked in';
+      case 'OnBreak':
+        return 'On break';
+      case 'ClockedOut':
+        return 'Clocked out';
+      default:
+        return 'Not clocked in';
     }
-    return this.isClockedIn() ? 'Clocked in' : 'Not clocked in';
   });
 
-  protected readonly clockButtonLabel = computed(() =>
-    this.isClockedIn() ? 'Clock out' : 'Clock in',
-  );
-
   protected readonly formattedDate = computed(() =>
-    this.displayNow().toLocaleDateString('en-US', {
+    this.now().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: this.zone(),
     }),
   );
 
   protected readonly formattedTime = computed(() =>
-    this.displayNow().toLocaleTimeString('en-US', {
+    this.now().toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       second: '2-digit',
+      timeZone: this.zone(),
     }),
   );
 
-  protected readonly clockInDisplay = computed(() => this.formatClockTime(this.clockInAt()));
-  protected readonly clockOutDisplay = computed(() => this.formatClockTime(this.clockOutAt()));
+  protected readonly clockInDisplay = computed(() => this.formatClock(this.state()?.clockInAt));
+  protected readonly clockOutDisplay = computed(() => this.formatClock(this.state()?.clockOutAt));
 
-  protected readonly workedSoFarDisplay = computed(() => {
-    const start = this.clockInAt();
-    if (!start) {
+  protected readonly breakDisplay = computed(() => {
+    const s = this.state();
+    if (!s) {
       return '0m';
     }
-    const end = this.clockOutAt() ?? this.displayNow();
-    return this.formatDuration(end.getTime() - start.getTime());
+    let minutes = s.breakMinutes;
+    if (s.onBreakSince) {
+      minutes += Math.max(0, Math.floor((this.now().getTime() - this.asUtc(s.onBreakSince)) / 60000));
+    }
+    return this.formatMinutes(minutes);
   });
+
+  protected readonly workedSoFarDisplay = computed(() => {
+    const s = this.state();
+    if (!s?.clockInAt) {
+      return '0m';
+    }
+    if (s.status === 'ClockedOut') {
+      return this.formatMinutes(s.workedMinutes);
+    }
+    const end = s.onBreakSince ? this.asUtc(s.onBreakSince) : this.now().getTime();
+    const total = Math.max(0, Math.floor((end - this.asUtc(s.clockInAt)) / 60000));
+    return this.formatMinutes(Math.max(0, total - s.breakMinutes));
+  });
+
+  ngOnInit(): void {
+    this.api.clock().subscribe({
+      next: (state) => this.state.set(state),
+      error: (error) => this.errorText.set(errorMessage(error)),
+    });
+  }
 
   ngOnDestroy(): void {
     clearInterval(this.tickHandle);
   }
 
-  toggleClock(): void {
-    if (this.isClockedIn()) {
-      this.clockOutAt.set(this.displayNow());
-      return;
-    }
-    this.clockInAt.set(this.displayNow());
-    this.clockOutAt.set(null);
+  clock(action: 'in' | 'out' | 'break-start' | 'break-end'): void {
+    this.busy.set(true);
+    this.errorText.set('');
+    this.api.clockAction(action).subscribe({
+      next: (state) => {
+        this.state.set(state);
+        this.busy.set(false);
+        this.changed.emit();
+      },
+      error: (error) => {
+        this.busy.set(false);
+        this.errorText.set(errorMessage(error));
+      },
+    });
   }
 
-  skipAhead15Minutes(): void {
-    this.demoOffsetMs.update((ms) => ms + 15 * 60 * 1000);
+  // The API sends UTC timestamps without a "Z"; treat them as UTC.
+  private asUtc(value: string): number {
+    return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(value) ? value : value + 'Z').getTime();
   }
 
-  private formatClockTime(date: Date | null): string {
-    if (!date) {
+  private formatClock(value: string | null | undefined): string {
+    if (!value) {
       return '—';
     }
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return new Date(this.asUtc(value)).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: this.zone(),
+    });
   }
 
-  private formatDuration(ms: number): string {
-    const totalMinutes = Math.max(0, Math.floor(ms / 60000));
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
+  private formatMinutes(total: number): string {
+    const hours = Math.floor(total / 60);
+    const minutes = total % 60;
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   }
 }

@@ -1,52 +1,129 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { APPROVERS, TEAM_OPTIONS } from '../shared/reference-data';
+import { errorMessage } from '../shared/api/api-helpers';
+import { LookupItem, PublicApi } from '../shared/api/public.api';
+import { APPROVERS } from '../shared/reference-data';
 
 @Component({
   imports: [ReactiveFormsModule, RouterLink],
   selector: 'app-register-manager',
   templateUrl: './register-manager.html',
 })
-export class RegisterManager {
+export class RegisterManager implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly api = inject(PublicApi);
 
-  protected readonly teamOptions = TEAM_OPTIONS;
   protected readonly approvers = APPROVERS;
-  protected readonly seatsAvailable = 8;
-  protected readonly seatsTotal = 10;
+  protected readonly teams = signal<LookupItem[]>([]);
+  protected readonly companies = signal<LookupItem[]>([]);
+  protected readonly seatsUsed = signal(0);
+  protected readonly seatsTotal = signal(10);
   protected readonly statusMessage = signal('');
+  protected readonly statusIsError = signal(false);
+  protected readonly isSaving = signal(false);
+  protected readonly isDone = signal(false);
+
+  protected get seatsAvailable(): number {
+    return Math.max(0, this.seatsTotal() - this.seatsUsed());
+  }
 
   protected readonly form = this.fb.nonNullable.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-    team: [this.teamOptions[0].value, Validators.required],
-    companyName: ['Cortracker Inc', Validators.required],
-    dialCode: [this.teamOptions[0].dialCode, Validators.required],
-    phoneNumber: ['', Validators.required],
+    firstName: ['', [Validators.required, Validators.maxLength(100)]],
+    lastName: ['', [Validators.required, Validators.maxLength(100)]],
+    teamId: [0, [Validators.required, Validators.min(1)]],
+    companyId: [0, [Validators.required, Validators.min(1)]],
+    dialCode: ['', Validators.required],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9 \-()]{7,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
   });
 
+  ngOnInit(): void {
+    this.api.lookups().subscribe({
+      next: (lookups) => {
+        this.teams.set(lookups.teams);
+        this.companies.set(lookups.companies);
+        this.form.patchValue({
+          teamId: lookups.teams[0]?.id ?? 0,
+          companyId: lookups.companies[0]?.id ?? 0,
+          dialCode: lookups.teams[0]?.extra ?? '',
+        });
+      },
+      error: (error) => this.fail(errorMessage(error)),
+    });
+    this.api.seats().subscribe({
+      next: (seats) => {
+        this.seatsUsed.set(seats.used);
+        this.seatsTotal.set(seats.total);
+      },
+      error: () => {
+        // Seat count is informational; the server still enforces the limit.
+      },
+    });
+  }
+
   onTeamChange(): void {
-    const selectedTeam = this.teamOptions.find(
-      (team) => team.value === this.form.controls.team.value,
-    );
-    if (selectedTeam) {
-      this.form.controls.dialCode.setValue(selectedTeam.dialCode);
+    const team = this.teams().find((t) => t.id === Number(this.form.controls.teamId.value));
+    if (team) {
+      this.form.controls.dialCode.setValue(team.extra ?? '');
     }
   }
 
+  showError(name: keyof typeof this.form.controls): boolean {
+    const control = this.form.controls[name];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
   saveDraft(): void {
-    this.statusMessage.set('Draft saved. You can come back and finish this anytime.');
+    const { firstName, lastName, email } = this.form.controls;
+    if (firstName.invalid || lastName.invalid || email.invalid) {
+      [firstName, lastName, email].forEach((control) => control.markAsTouched());
+      this.fail('Enter at least your name and a valid email to save a draft.');
+      return;
+    }
+    this.send(false);
   }
 
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.statusMessage.set('Please fill in all required fields before submitting.');
+      this.fail('Please fix the highlighted fields before submitting.');
       return;
     }
+    this.send(true);
+  }
 
-    this.statusMessage.set('Submitted for approval. You will get an email once it is reviewed.');
+  private send(submitForApproval: boolean): void {
+    const v = this.form.getRawValue();
+    this.isSaving.set(true);
+    this.statusMessage.set('');
+    this.api
+      .registerManager({
+        firstName: v.firstName.trim(),
+        lastName: v.lastName.trim(),
+        teamId: Number(v.teamId) || null,
+        companyId: Number(v.companyId) || null,
+        phoneDialCode: v.dialCode,
+        phoneNumber: v.phoneNumber.trim(),
+        email: v.email.trim(),
+        submitForApproval,
+      })
+      .subscribe({
+        next: (result) => {
+          this.isSaving.set(false);
+          this.statusIsError.set(false);
+          this.statusMessage.set(result.message);
+          this.isDone.set(submitForApproval);
+        },
+        error: (error) => {
+          this.isSaving.set(false);
+          this.fail(errorMessage(error));
+        },
+      });
+  }
+
+  private fail(message: string): void {
+    this.statusIsError.set(true);
+    this.statusMessage.set(message);
   }
 }

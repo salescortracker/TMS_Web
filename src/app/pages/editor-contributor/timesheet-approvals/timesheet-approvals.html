@@ -1,92 +1,78 @@
-  <div class="approvals">
-    <div class="approvals__header">
-      <div>
-        <h1>Timesheet approvals</h1>
-        <p class="text-muted">
-          Candidates submit each day. Approve a day, reject it with a reason, or open it to
-          correct the times.
-        </p>
-      </div>
-      <button type="button" class="btn btn--primary" (click)="approveAllInView()">
-        Approve all in view ({{ filteredEntries().length }})
+<div class="approvals">
+  <div class="approvals__header">
+    <div>
+      <h1>Timesheet approvals</h1>
+      <p class="text-muted">
+        Candidates submit each day. Approve a day, reject it with a reason, or open it to
+        correct the times.
+      </p>
+    </div>
+    @if (canApprove) {
+      <button type="button" class="btn btn--primary" [disabled]="busy() || pendingInView().length === 0" (click)="approveMany()">
+        {{ selectedIds().size > 0 ? 'Approve selected' : 'Approve all in view' }}
+        ({{ selectedIds().size > 0 ? selectedIds().size : pendingInView().length }})
+      </button>
+    }
+  </div>
+
+  @if (errorText()) {
+    <p class="form-error">{{ errorText() }}</p>
+  }
+
+  <div class="approvals__toolbar">
+    <div class="tab-row">
+      <button type="button" class="nav-tab" [class.nav-tab--active]="activeTab() === 'Pending'" (click)="setTab('Pending')">
+        Pending approval ({{ pendingCount() }})
+      </button>
+      <button type="button" class="nav-tab" [class.nav-tab--active]="activeTab() === 'Flagged'" (click)="setTab('Flagged')">
+        Flagged ({{ flaggedCount() }})
+      </button>
+      <button type="button" class="nav-tab" [class.nav-tab--active]="activeTab() === 'Approved'" (click)="setTab('Approved')">
+        Approved ({{ approvedCount() }})
+      </button>
+      <button type="button" class="nav-tab" [class.nav-tab--active]="activeTab() === 'Rejected'" (click)="setTab('Rejected')">
+        Rejected ({{ rejectedCount() }})
+      </button>
+      <button type="button" class="nav-tab" [class.nav-tab--active]="activeTab() === 'All'" (click)="setTab('All')">
+        All ({{ allCount() }})
       </button>
     </div>
 
-    <div class="approvals__toolbar">
-      <div class="tab-row">
-        <button
-          type="button"
-          class="nav-tab"
-          [class.nav-tab--active]="activeTab() === 'Pending'"
-          (click)="setTab('Pending')"
-        >
-          Pending approval ({{ pendingCount() }})
-        </button>
-        <button
-          type="button"
-          class="nav-tab"
-          [class.nav-tab--active]="activeTab() === 'Flagged'"
-          (click)="setTab('Flagged')"
-        >
-          Flagged ({{ flaggedCount() }})
-        </button>
-        <button
-          type="button"
-          class="nav-tab"
-          [class.nav-tab--active]="activeTab() === 'Approved'"
-          (click)="setTab('Approved')"
-        >
-          Approved ({{ approvedCount() }})
-        </button>
-        <button
-          type="button"
-          class="nav-tab"
-          [class.nav-tab--active]="activeTab() === 'Rejected'"
-          (click)="setTab('Rejected')"
-        >
-          Rejected ({{ rejectedCount() }})
-        </button>
-        <button
-          type="button"
-          class="nav-tab"
-          [class.nav-tab--active]="activeTab() === 'All'"
-          (click)="setTab('All')"
-        >
-          All ({{ allCount() }})
-        </button>
-      </div>
-
-      <div class="approvals__filters">
-        <select class="input-control">
-          <option>All companies</option>
-        </select>
-        <select class="input-control">
-          <option>All teams (India and USA)</option>
-        </select>
-        <input
-          class="input-control"
-          type="text"
-          placeholder="Search candidate or email"
-          [value]="searchQuery()"
-          (input)="onSearchInput($any($event.target).value)"
-        />
-        <select class="input-control">
-          <option>All weeks</option>
-        </select>
-      </div>
+    <div class="approvals__filters">
+      <select class="input-control" (change)="onCompanyChange($any($event.target).value)">
+        <option value="">All companies</option>
+        @for (c of companies(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
+      <select class="input-control" (change)="onTeamChange($any($event.target).value)">
+        <option value="">All teams</option>
+        @for (t of teams(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+      <input
+        class="input-control"
+        type="text"
+        placeholder="Search candidate or email"
+        [value]="searchQuery()"
+        (input)="onSearchInput($any($event.target).value)"
+        (keyup.enter)="load()"
+        (blur)="load()"
+      />
     </div>
+  </div>
 
-    <section class="card">
+  <section class="card">
+    @if (loading() && entries().length === 0) {
+      <p class="page-state">Loading timesheets…</p>
+    } @else {
       <div class="table-scroll">
         <table class="data-table">
           <thead>
             <tr>
               <th class="cell--checkbox">
-                <input
-                  type="checkbox"
-                  [checked]="allVisibleSelected()"
-                  (change)="toggleSelectAllVisible()"
-                />
+                <input type="checkbox" [checked]="allVisibleSelected()" (change)="toggleSelectAllVisible()" />
               </th>
               <th>Candidate</th>
               <th>Day</th>
@@ -101,11 +87,7 @@
             @for (entry of filteredEntries(); track entry.id) {
               <tr>
                 <td class="cell--checkbox">
-                  <input
-                    type="checkbox"
-                    [checked]="isSelected(entry.id)"
-                    (change)="toggleSelected(entry.id)"
-                  />
+                  <input type="checkbox" [checked]="isSelected(entry.id)" (change)="toggleSelected(entry.id)" />
                 </td>
                 <td>
                   <div class="applicant-cell">
@@ -123,6 +105,9 @@
                 <td>
                   <span class="applicant-cell__type">{{ entry.task }}</span>
                   <span class="applicant-cell__company">{{ entry.description }}</span>
+                  @if (entry.rejectionReason) {
+                    <span class="applicant-cell__company">Rejected: {{ entry.rejectionReason }}</span>
+                  }
                 </td>
                 <td>
                   <span class="applicant-cell__type">{{ entry.hours }}</span>
@@ -148,22 +133,60 @@
                 </td>
                 <td>
                   <div class="row-actions">
-                    <a class="link link--strong" href="javascript:void(0)">Review / edit</a>
-                    @if (entry.decision === 'Pending') {
-                      <button
-                        type="button"
-                        class="btn btn--primary btn--sm"
-                        (click)="approve(entry.id)"
-                      >
-                        Approve
-                      </button>
+                    @if (canEdit && entry.decision !== 'Approved') {
+                      <a class="link link--strong" href="javascript:void(0)" (click)="startEdit(entry)">Review / edit</a>
+                    }
+                    @if (entry.decision === 'Pending' && canApprove) {
+                      <button type="button" class="btn btn--secondary btn--sm" [disabled]="busy()" (click)="reject(entry)">Reject</button>
+                      <button type="button" class="btn btn--primary btn--sm" [disabled]="busy()" (click)="approve(entry)">Approve</button>
                     }
                   </div>
                 </td>
               </tr>
+
+              @if (editingId() === entry.id) {
+                <tr>
+                  <td></td>
+                  <td colspan="7">
+                    <div class="form-grid">
+                      <div class="field">
+                        <label class="field__label">Log-in</label>
+                        <input class="input-control" type="time" [value]="edit().logIn" (input)="setEdit('logIn', $any($event.target).value)" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Log-out</label>
+                        <input class="input-control" type="time" [value]="edit().logOut" (input)="setEdit('logOut', $any($event.target).value)" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Break (min)</label>
+                        <input class="input-control" type="number" min="0" max="600" [value]="edit().breakMinutes"
+                          (input)="setEdit('breakMinutes', $any($event.target).valueAsNumber || 0)" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Task</label>
+                        <input class="input-control" type="text" maxlength="80" [value]="edit().task" (input)="setEdit('task', $any($event.target).value)" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Description</label>
+                        <input class="input-control" type="text" maxlength="500" [value]="edit().description" (input)="setEdit('description', $any($event.target).value)" />
+                      </div>
+                    </div>
+                    @if (editError()) {
+                      <span class="field-error">{{ editError() }}</span>
+                    }
+                    <div class="row-actions">
+                      <button type="button" class="btn btn--secondary btn--sm" (click)="cancelEdit()">Cancel</button>
+                      <button type="button" class="btn btn--primary btn--sm" [disabled]="busy()" (click)="saveEdit()">Save changes</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr><td colspan="8" class="page-state">No timesheets in this view.</td></tr>
             }
           </tbody>
         </table>
       </div>
-    </section>
-  </div>
+    }
+  </section>
+</div>

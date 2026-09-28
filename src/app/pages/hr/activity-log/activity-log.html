@@ -3,41 +3,30 @@
     <div>
       <h1>Activity log</h1>
       <p class="text-muted">
-        A timeline of every submission, approval, edit and alert. Srikanth is notified of
+        A timeline of every submission, approval, edit and alert. Administrators are notified of
         timesheet changes.
       </p>
     </div>
   </div>
 
   <div class="tab-row">
-    <button
-      type="button"
-      class="nav-tab"
-      [class.nav-tab--active]="tab() === 'Activity'"
-      (click)="setTab('Activity')"
-    >
+    <button type="button" class="nav-tab" [class.nav-tab--active]="tab() === 'Activity'" (click)="setTab('Activity')">
       Activity
     </button>
-    <button
-      type="button"
-      class="nav-tab"
-      [class.nav-tab--active]="tab() === 'Email alerts'"
-      (click)="setTab('Email alerts')"
-    >
-      Email alerts ({{ emailAlerts.length }})
+    <button type="button" class="nav-tab" [class.nav-tab--active]="tab() === 'Email alerts'" (click)="setTab('Email alerts')">
+      Email alerts ({{ emailAlerts().length }})
     </button>
   </div>
+
+  @if (errorText()) {
+    <p class="form-error">{{ errorText() }}</p>
+  }
 
   @if (tab() === 'Activity') {
     <div class="log-toolbar">
       <div class="log-toolbar__chips">
         @for (filter of filters; track filter) {
-          <button
-            type="button"
-            class="filter-chip"
-            [class.filter-chip--active]="activeFilter() === filter"
-            (click)="setFilter(filter)"
-          >
+          <button type="button" class="filter-chip" [class.filter-chip--active]="activeFilter() === filter" (click)="setFilter(filter)">
             {{ filter }}
           </button>
         }
@@ -48,12 +37,17 @@
         placeholder="Search activity"
         [value]="searchQuery()"
         (input)="onSearchInput($any($event.target).value)"
+        (keyup.enter)="search()"
+        (blur)="search()"
       />
     </div>
 
     <section class="card">
       <div class="log-list">
-        @for (entry of filteredActivity(); track entry.timestamp + entry.actor) {
+        @if (loading() && activity().length === 0) {
+          <p class="page-state">Loading activity…</p>
+        }
+        @for (entry of activity(); track entry.id) {
           <div class="log-row">
             <span
               class="log-row__dot"
@@ -66,12 +60,12 @@
               @if (entry.description) {
                 <p>{{ entry.description }}</p>
               }
-              <span class="log-row__meta">{{ entry.timestamp }}</span>
+              <span class="log-row__meta">{{ entry.time | date: 'MMM d, h:mm a' }}</span>
             </div>
           </div>
         }
 
-        @if (filteredActivity().length === 0) {
+        @if (!loading() && activity().length === 0) {
           <p class="text-muted">No activity matches this filter yet.</p>
         }
       </div>
@@ -79,7 +73,7 @@
   } @else {
     <section class="card">
       <div class="log-list">
-        @for (alert of emailAlerts; track alert.timestamp + alert.recipient) {
+        @for (alert of emailAlerts(); track alert.id) {
           <div class="log-row">
             <span class="log-row__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -90,9 +84,11 @@
             <div class="log-row__content">
               <strong>To {{ alert.recipient }}</strong>
               <p>{{ alert.subject }}</p>
-              <span class="log-row__meta">Sent {{ alert.timestamp }}</span>
+              <span class="log-row__meta">Sent {{ alert.time | date: 'MMM d, h:mm a' }}</span>
             </div>
           </div>
+        } @empty {
+          <p class="text-muted">No email alerts yet.</p>
         }
       </div>
     </section>

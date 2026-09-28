@@ -1,198 +1,104 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { AdminApi, TimesheetReport } from '../../../shared/api/admin.api';
+import { errorMessage, saveBlob } from '../../../shared/api/api-helpers';
+import { LookupItem, PublicApi } from '../../../shared/api/public.api';
+import { AuthService } from '../../../shared/auth.service';
 
-type ViewMode = 'Weekly' | 'Monthly';
-
-interface TeamSummaryRow {
-  name: string;
-  candidates: number;
-  hours: string;
-  submitted: number;
-  approved: number;
-  pending: number;
-  rejected: number;
-}
-
-interface CandidateRow {
-  name: string;
-  team: string;
-  weekHours: string;
-  submitted: number;
-  approved: number;
-  pending: number;
-  rejected: number;
-}
-
-const TEAM_SUMMARY_ROWS: TeamSummaryRow[] = [
-  {
-    name: 'Cortracker Inc · India team',
-    candidates: 3,
-    hours: '51.5 hrs',
-    submitted: 7,
-    approved: 6,
-    pending: 1,
-    rejected: 0,
-  },
-  {
-    name: 'Cortracker Inc · USA team',
-    candidates: 5,
-    hours: '76 hrs',
-    submitted: 10,
-    approved: 7,
-    pending: 3,
-    rejected: 0,
-  },
-  {
-    name: 'Perfect Solutions Group Inc · USA team',
-    candidates: 3,
-    hours: '45 hrs',
-    submitted: 6,
-    approved: 4,
-    pending: 2,
-    rejected: 0,
-  },
-];
-
-const CANDIDATE_ROWS: CandidateRow[] = [
-  {
-    name: 'Jordan Alvarez',
-    team: 'Cortracker Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 3,
-    approved: 0,
-    pending: 3,
-    rejected: 0,
-  },
-  {
-    name: 'Priya Natarajan',
-    team: 'Cortracker Inc · India team',
-    weekHours: '22.5 hrs',
-    submitted: 3,
-    approved: 2,
-    pending: 1,
-    rejected: 0,
-  },
-  {
-    name: 'Mateo Fernandez',
-    team: 'Perfect Solutions Group Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 3,
-    approved: 2,
-    pending: 1,
-    rejected: 0,
-  },
-  {
-    name: 'Arjun Mehta',
-    team: 'Cortracker Inc · India team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 2,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: 'Fatima Sheikh',
-    team: 'Cortracker Inc · India team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 2,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: 'Wei Chen',
-    team: 'Cortracker Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 2,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: 'Tomas Silva',
-    team: 'Cortracker Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 2,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: 'Grace Kim',
-    team: 'Cortracker Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 2,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: "Liam O'Connor",
-    team: 'Cortracker Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 1,
-    approved: 1,
-    pending: 0,
-    rejected: 0,
-  },
-  {
-    name: 'Lena Kowalski',
-    team: 'Perfect Solutions Group Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 2,
-    approved: 1,
-    pending: 1,
-    rejected: 0,
-  },
-  {
-    name: 'Daniel Osei',
-    team: 'Perfect Solutions Group Inc · USA team',
-    weekHours: '22.5 hrs',
-    submitted: 1,
-    approved: 1,
-    pending: 0,
-    rejected: 0,
-  },
-];
+type ViewMode = 'weekly' | 'monthly';
 
 @Component({
-  imports: [],
+  imports: [RouterLink],
   selector: 'app-resource-manager-view-timesheets',
   templateUrl: './timesheets.html',
 })
-export class ResourceManagerViewTimesheets {
-  protected readonly teamSummaryRows = TEAM_SUMMARY_ROWS;
-  protected readonly candidateRows = signal<CandidateRow[]>(CANDIDATE_ROWS);
-  protected readonly viewMode = signal<ViewMode>('Weekly');
-  protected readonly searchQuery = signal('');
+export class ResourceManagerViewTimesheets implements OnInit {
+  private readonly api = inject(AdminApi);
+  private readonly lookupApi = inject(PublicApi);
+  private readonly auth = inject(AuthService);
 
-  protected readonly filteredCandidateRows = computed(() => {
-    const query = this.searchQuery().trim().toLowerCase();
-    if (!query) {
-      return this.candidateRows();
-    }
-    return this.candidateRows().filter(
-      (row) => row.name.toLowerCase().includes(query) || row.team.toLowerCase().includes(query),
-    );
-  });
+  protected readonly home = this.auth.homeRoute();
+  protected readonly canOpenPeople = this.auth.hasMenu('people');
 
-  protected readonly totals = computed(() =>
-    this.teamSummaryRows.reduce(
-      (acc, row) => ({
-        submitted: acc.submitted + row.submitted,
-        approved: acc.approved + row.approved,
-        pending: acc.pending + row.pending,
-        rejected: acc.rejected + row.rejected,
-      }),
-      { submitted: 0, approved: 0, pending: 0, rejected: 0 },
-    ),
-  );
+  protected readonly report = signal<TimesheetReport | null>(null);
+  protected readonly companies = signal<LookupItem[]>([]);
+  protected readonly teams = signal<LookupItem[]>([]);
+  protected readonly companyId = signal<number | null>(null);
+  protected readonly teamId = signal<number | null>(null);
+  protected readonly search = signal('');
+  protected readonly period = signal<string | null>(null);
+  protected readonly viewMode = signal<ViewMode>('weekly');
+  protected readonly loading = signal(true);
+  protected readonly exporting = signal(false);
+  protected readonly errorText = signal('');
+
+  ngOnInit(): void {
+    this.lookupApi.lookups().subscribe({
+      next: (lookups) => {
+        this.companies.set(lookups.companies);
+        this.teams.set(lookups.teams);
+      },
+    });
+    this.load();
+  }
+
+  load(): void {
+    this.loading.set(true);
+    this.errorText.set('');
+    this.api.report(this.viewMode(), this.period(), this.filters()).subscribe({
+      next: (report) => {
+        this.report.set(report);
+        this.period.set(report.periodValue);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        this.errorText.set(errorMessage(error));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private filters() {
+    return { companyId: this.companyId(), teamId: this.teamId(), search: this.search().trim() };
+  }
 
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
+    this.period.set(null);
+    this.load();
+  }
+
+  onPeriodChange(value: string): void {
+    this.period.set(value);
+    this.load();
+  }
+
+  onCompanyChange(value: string): void {
+    this.companyId.set(value ? Number(value) : null);
+    this.load();
+  }
+
+  onTeamChange(value: string): void {
+    this.teamId.set(value ? Number(value) : null);
+    this.load();
   }
 
   onSearchInput(value: string): void {
-    this.searchQuery.set(value);
+    this.search.set(value);
+  }
+
+  exportExcel(): void {
+    this.exporting.set(true);
+    this.api.exportReport(this.viewMode(), this.period(), this.filters()).subscribe({
+      next: (blob) => {
+        saveBlob(blob, `timesheets-${this.period() ?? 'report'}.xlsx`);
+        this.exporting.set(false);
+      },
+      error: (error) => {
+        this.exporting.set(false);
+        this.errorText.set(errorMessage(error));
+      },
+    });
   }
 
   initials(name: string): string {

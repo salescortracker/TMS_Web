@@ -1,168 +1,61 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { AdminApi, Applicant } from '../../../shared/api/admin.api';
+import { errorMessage } from '../../../shared/api/api-helpers';
+import { AlertService } from '../../../shared/alert.service';
+import { AuthService } from '../../../shared/auth.service';
 
-type ApplicantType = 'Candidate' | 'Resource Manager';
-type ApplicantStatus = 'Pending' | 'Approved' | 'Rejected';
-type FilterTab = ApplicantStatus | 'All';
-
-interface Applicant {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  type: ApplicantType;
-  team: string;
-  company: string;
-  submitted: string;
-  flag?: string;
-  status: ApplicantStatus;
-}
-
-
-const SEED_APPLICANTS: Applicant[] = [
-  {
-    id: 'jordan-alvarez',
-    name: 'Jordan Alvarez',
-    email: 'jordan.alvarez2@cortracker360.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 12, 2026',
-    status: 'Pending',
-  },
-  {
-    id: 'nikhil-rao',
-    name: 'Nikhil Rao',
-    email: 'nikhil.r@cortracker360.com',
-    phone: '+91 987-654-3210',
-    type: 'Candidate',
-    team: 'India team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 12, 2026',
-    status: 'Pending',
-  },
-  {
-    id: 'aaa-test123',
-    name: 'aaa test123',
-    email: 'aaatest@gmail.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Others',
-    submitted: 'Sep 11, 2026',
-    flag: 'Name contains digits',
-    status: 'Pending',
-  },
-  {
-    id: 'tomas-silva',
-    name: 'Tomas Silva',
-    email: 'tomas.s@cortracker360.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 10, 2026',
-    status: 'Pending',
-  },
-  {
-    id: 'qwerty-asdf',
-    name: 'qwerty asdf',
-    email: 'qwerty@tempmail.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Others',
-    submitted: 'Sep 9, 2026',
-    flag: 'Personal or temporary email domain',
-    status: 'Pending',
-  },
-  {
-    id: 'anita-verma',
-    name: 'Anita Verma',
-    email: 'anita.v@cortracker360.com',
-    phone: '+91 987-654-3210',
-    type: 'Resource Manager',
-    team: 'India team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 12, 2026',
-    status: 'Pending',
-  },
-  {
-    id: 'priya-natarajan',
-    name: 'Priya Natarajan',
-    email: 'priya.n@cortracker360.com',
-    phone: '+91 987-654-3210',
-    type: 'Candidate',
-    team: 'India team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 5, 2026',
-    status: 'Approved',
-  },
-  {
-    id: 'mateo-fernandez',
-    name: 'Mateo Fernandez',
-    email: 'mateo.f@cortracker360.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Perfect Solutions Group Inc',
-    submitted: 'Sep 4, 2026',
-    status: 'Approved',
-  },
-  {
-    id: 'wei-chen',
-    name: 'Wei Chen',
-    email: 'wei.c@cortracker360.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Cortracker Inc',
-    submitted: 'Sep 3, 2026',
-    status: 'Approved',
-  },
-  {
-    id: 'omar-haddad',
-    name: 'Omar Haddad',
-    email: 'omar.h@cortracker360.com',
-    phone: '+1 234-567-8910',
-    type: 'Candidate',
-    team: 'USA team',
-    company: 'Perfect Solutions Group Inc',
-    submitted: 'Sep 2, 2026',
-    flag: 'Duplicate submission',
-    status: 'Rejected',
-  },
-];
+type FilterTab = 'Pending' | 'Approved' | 'Rejected' | 'All';
 
 @Component({
   imports: [],
   selector: 'app-hr-onboarding-approvals',
   templateUrl: './onboarding-approvals.html',
 })
-export class HrOnboardingApprovals {
-  protected readonly seatsUsed = 2;
-  protected readonly seatsTotal = 10;
+export class HrOnboardingApprovals implements OnInit {
+  private readonly api = inject(AdminApi);
+  private readonly alerts = inject(AlertService);
 
-  protected readonly applicants = signal<Applicant[]>(SEED_APPLICANTS);
+  protected readonly canDecide = inject(AuthService).can('approve_onboarding');
+  protected readonly applicants = signal<Applicant[]>([]);
+  protected readonly seatsUsed = signal(0);
+  protected readonly seatsTotal = signal(10);
   protected readonly activeTab = signal<FilterTab>('Pending');
+  protected readonly loading = signal(true);
+  protected readonly busyId = signal<string | null>(null);
+  protected readonly errorText = signal('');
 
-  protected readonly pendingCount = computed(
-    () => this.applicants().filter((applicant) => applicant.status === 'Pending').length,
-  );
-  protected readonly approvedCount = computed(
-    () => this.applicants().filter((applicant) => applicant.status === 'Approved').length,
-  );
-  protected readonly rejectedCount = computed(
-    () => this.applicants().filter((applicant) => applicant.status === 'Rejected').length,
-  );
+  protected readonly pendingCount = computed(() => this.count('Pending'));
+  protected readonly approvedCount = computed(() => this.count('Approved'));
+  protected readonly rejectedCount = computed(() => this.count('Rejected'));
   protected readonly allCount = computed(() => this.applicants().length);
 
   protected readonly filteredApplicants = computed(() => {
     const tab = this.activeTab();
-    return tab === 'All'
-      ? this.applicants()
-      : this.applicants().filter((applicant) => applicant.status === tab);
+    return tab === 'All' ? this.applicants() : this.applicants().filter((a) => a.status === tab);
   });
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  private count(status: string): number {
+    return this.applicants().filter((a) => a.status === status).length;
+  }
+
+  load(): void {
+    this.api.applicants().subscribe({
+      next: (list) => {
+        this.applicants.set(list.items);
+        this.seatsUsed.set(list.seatsUsed);
+        this.seatsTotal.set(list.seatsTotal);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        this.errorText.set(errorMessage(error));
+        this.loading.set(false);
+      },
+    });
+  }
 
   setTab(tab: FilterTab): void {
     this.activeTab.set(tab);
@@ -175,23 +68,70 @@ export class HrOnboardingApprovals {
     return (first + second).toUpperCase();
   }
 
-  approve(id: string): void {
-    this.updateStatus(id, 'Approved');
+  async approve(applicant: Applicant): Promise<void> {
+    if (!(await this.alerts.confirm('Approve this request?', `${applicant.name} will get an active account.`, 'Approve'))) {
+      return;
+    }
+    this.busyId.set(applicant.id);
+    this.api.approveApplicant(applicant.id).subscribe({
+      next: (result) => {
+        this.busyId.set(null);
+        if (result.temporaryPassword) {
+          this.alerts.credentials(`${result.name} approved`, result.email, result.temporaryPassword);
+        } else {
+          this.alerts.success('Approved', result.message);
+        }
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.alerts.error('Could not approve', errorMessage(error));
+      },
+    });
   }
 
-  reject(id: string): void {
-    this.updateStatus(id, 'Rejected');
+  async reject(applicant: Applicant): Promise<void> {
+    const reason = await this.alerts.askReason(`Reject ${applicant.name}?`, 'Reason (optional)', false);
+    if (reason === null) {
+      return;
+    }
+    this.busyId.set(applicant.id);
+    this.api.rejectApplicant(applicant.id, reason || null).subscribe({
+      next: () => {
+        this.busyId.set(null);
+        this.alerts.success('Rejected', `${applicant.name}'s request was rejected.`);
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.alerts.error('Could not reject', errorMessage(error));
+      },
+    });
   }
 
-  approveAllPending(): void {
-    this.applicants.update((rows) =>
-      rows.map((row) => (row.status === 'Pending' ? { ...row, status: 'Approved' } : row)),
-    );
-  }
-
-  private updateStatus(id: string, status: ApplicantStatus): void {
-    this.applicants.update((rows) =>
-      rows.map((row) => (row.id === id ? { ...row, status } : row)),
-    );
+  async approveAllPending(): Promise<void> {
+    if (this.pendingCount() === 0) {
+      return;
+    }
+    if (!(await this.alerts.confirm('Approve all pending?', 'Flagged requests are skipped and must be reviewed one by one.', 'Approve all'))) {
+      return;
+    }
+    this.busyId.set('all');
+    this.api.approveAllApplicants().subscribe({
+      next: (result) => {
+        this.busyId.set(null);
+        const passwords = result.results
+          .filter((r) => r.temporaryPassword)
+          .map((r) => `${r.email} — ${r.temporaryPassword}`)
+          .join(', ');
+        const skipped = result.skippedFlagged ? `${result.skippedFlagged} flagged request(s) were skipped. ` : '';
+        this.alerts.success(`${result.approved} approved`, `${skipped}${passwords}`);
+        this.load();
+      },
+      error: (error) => {
+        this.busyId.set(null);
+        this.alerts.error('Could not approve all', errorMessage(error));
+      },
+    });
   }
 }

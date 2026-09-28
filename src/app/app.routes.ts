@@ -1,7 +1,14 @@
 import { Routes } from '@angular/router';
+import { loggedInGuard, roleGuard } from './shared/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./login/login').then((m) => m.Login) },
+  {
+    path: 'change-password',
+    canActivate: [loggedInGuard],
+    loadComponent: () =>
+      import('./change-password/change-password').then((m) => m.ChangePassword),
+  },
   {
     path: 'onboard',
     loadComponent: () => import('./onboarding/onboarding').then((m) => m.Onboarding),
@@ -13,6 +20,7 @@ export const routes: Routes = [
   },
   {
     path: 'super-admin',
+    canActivate: [roleGuard('Admin')],
     loadComponent: () =>
       import('./pages/super-admin/super-admin-shell').then((m) => m.SuperAdminShell),
     children: [
@@ -67,6 +75,7 @@ export const routes: Routes = [
   { path: 'timesheet-approvals', redirectTo: 'super-admin/timesheet-approvals' },
   {
     path: 'super-admin-manager',
+    canActivate: [roleGuard('Manager')],
     loadComponent: () =>
       import('./pages/super-admin-manager/super-admin-manager-shell').then(
         (m) => m.SuperAdminManagerShell,
@@ -133,6 +142,7 @@ export const routes: Routes = [
   },
   {
     path: 'hr',
+    canActivate: [roleGuard('HR')],
     loadComponent: () => import('./pages/hr/hr-shell').then((m) => m.HrShell),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -172,6 +182,7 @@ export const routes: Routes = [
   },
   {
     path: 'editor-contributor',
+    canActivate: [roleGuard('Editor')],
     loadComponent: () =>
       import('./pages/editor-contributor/editor-contributor-shell').then(
         (m) => m.EditorContributorShell,
@@ -217,6 +228,7 @@ export const routes: Routes = [
   },
   {
     path: 'contributor-view',
+    canActivate: [roleGuard('Contributor View')],
     loadComponent: () =>
       import('./pages/contributor-view/contributor-view-shell').then(
         (m) => m.ContributorViewShell,
@@ -255,6 +267,7 @@ export const routes: Routes = [
   },
   {
     path: 'candidate',
+    canActivate: [roleGuard('Candidate')],
     loadComponent: () =>
       import('./pages/candidate/candidate-shell').then((m) => m.CandidateShell),
     children: [
@@ -288,6 +301,7 @@ export const routes: Routes = [
   },
   {
     path: 'resource-manager-view',
+    canActivate: [roleGuard('Resource Manager View')],
     loadComponent: () =>
       import('./pages/resource-manager-view/resource-manager-view-shell').then(
         (m) => m.ResourceManagerViewShell,

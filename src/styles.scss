@@ -2457,3 +2457,93 @@ select.input-control {
     font-size: 2rem;
   }
 }
+
+// ---------- Notifications dropdown ----------
+.notif {
+  position: relative;
+}
+
+.notif__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+  width: 320px;
+  max-height: 380px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
+.notif__title {
+  padding: 12px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.notif__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.notif__item-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.notif__item-text,
+.notif__item-time,
+.notif__empty {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.notif__empty {
+  padding: 16px 14px;
+}
+
+// ---------- Shared page states ----------
+.page-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: #64748b;
+}
+
+.alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alert--success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.alert--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}

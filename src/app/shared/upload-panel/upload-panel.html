@@ -8,8 +8,8 @@
     <p class="text-muted">{{ columnsHint() }}</p>
 
     <div class="button-row">
-      <button type="button" class="btn btn--secondary">Download template (.xlsx)</button>
-      <button type="button" class="btn btn--secondary">Sample with errors (.xlsx)</button>
+      <button type="button" class="btn btn--secondary" (click)="download('blank')">Download template (.xlsx)</button>
+      <button type="button" class="btn btn--secondary" (click)="download('errors')">Sample with errors (.xlsx)</button>
     </div>
 
     <p class="eyebrow">Validation rules</p>
@@ -33,47 +33,88 @@
       (dragleave)="onDragLeave()"
       (drop)="onDrop($event)"
     >
-      <svg
-        class="dropzone__icon"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
+      <svg class="dropzone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 16V4m0 0 4 4m-4-4-4 4" stroke-linecap="round" stroke-linejoin="round" />
         <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round" />
       </svg>
       <p>Drag an .xlsx file here</p>
-      <button type="button" class="btn btn--primary" (click)="fileInput.click()">
-        Choose file
-      </button>
-      <input
-        #fileInput
-        type="file"
-        accept=".xlsx"
-        class="dropzone__input"
-        (change)="onFileSelected($event)"
-      />
+      <button type="button" class="btn btn--primary" (click)="fileInput.click()">Choose file</button>
+      <input #fileInput type="file" accept=".xlsx" class="dropzone__input" (change)="onFileSelected($event)" />
     </div>
 
-    @if (selectedFileName()) {
-      <p class="form-note">Selected: {{ selectedFileName() }}</p>
+    @if (selectedFile(); as file) {
+      <p class="form-note">Selected: {{ file.name }}</p>
+      <button type="button" class="btn btn--primary" [disabled]="uploading()" (click)="upload()">
+        {{ uploading() ? 'Validating…' : 'Upload and import' }}
+      </button>
+    }
+
+    @if (errorText()) {
+      <p class="form-error">{{ errorText() }}</p>
     }
 
     <p class="text-muted">
-      No file handy? Try the built-in data:
-      <a
-        class="link link--strong"
-        href="javascript:void(0)"
-        (click)="useBuiltInSample('valid-sample.xlsx')"
-        >Valid sample</a
-      >
-      <a
-        class="link link--strong"
-        href="javascript:void(0)"
-        (click)="useBuiltInSample('sample-with-errors.xlsx')"
-        >Sample with errors</a
-      >
+      No file handy? Download a
+      <a class="link link--strong" href="javascript:void(0)" (click)="download('valid')">valid sample</a>
+      or a
+      <a class="link link--strong" href="javascript:void(0)" (click)="download('errors')">sample with errors</a>,
+      then upload it here. (Replace the sample email with a real candidate email first.)
     </p>
   </section>
 </div>
+
+@if (result(); as r) {
+  <section class="card">
+    <div class="section-header">
+      <h2>Result for {{ r.fileName }}</h2>
+      <span class="section-header__hint">{{ r.imported }} imported · {{ r.errors }} with errors · {{ r.total }} rows</span>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>Row</th><th>Candidate</th><th>Date</th><th>Result</th><th>Message</th></tr>
+        </thead>
+        <tbody>
+          @for (row of r.rows; track row.row) {
+            <tr>
+              <td>{{ row.row }}</td>
+              <td>{{ row.candidate }}</td>
+              <td>{{ row.date }}</td>
+              <td>
+                <span class="badge" [class.badge--success]="row.status === 'Valid'" [class.badge--danger]="row.status === 'Error'">
+                  {{ row.status === 'Valid' ? 'Imported' : 'Error' }}
+                </span>
+              </td>
+              <td>{{ row.message ?? '' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+
+@if (history().length) {
+  <section class="card">
+    <div class="section-header"><h2>Recent uploads</h2></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr><th>File</th><th>Uploaded by</th><th>When</th><th>Rows</th><th>Imported</th><th>Errors</th></tr>
+        </thead>
+        <tbody>
+          @for (b of history(); track b.batchId) {
+            <tr>
+              <td class="cell--strong">{{ b.fileName }}</td>
+              <td>{{ b.uploadedBy }}</td>
+              <td>{{ b.uploadedAt | date: 'MMM d, h:mm a' }}</td>
+              <td>{{ b.total }}</td>
+              <td>{{ b.imported }}</td>
+              <td>{{ b.errors }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}

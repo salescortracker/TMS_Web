@@ -16,8 +16,8 @@
         <span class="clock-stat__value">{{ clockOutDisplay() }}</span>
       </div>
       <div class="clock-stat">
-        <span class="clock-stat__label">Break total (0)</span>
-        <span class="clock-stat__value">0m</span>
+        <span class="clock-stat__label">Break total ({{ state()?.breakCount ?? 0 }})</span>
+        <span class="clock-stat__value">{{ breakDisplay() }}</span>
       </div>
       <div class="clock-stat">
         <span class="clock-stat__label">Worked so far</span>
@@ -25,21 +25,44 @@
       </div>
     </div>
 
-    <button type="button" class="btn btn--primary clock-card__action" (click)="toggleClock()">
-      {{ clockButtonLabel() }}
-    </button>
+    <div class="clock-card__buttons">
+      @switch (status()) {
+        @case ('Working') {
+          <button type="button" class="btn btn--secondary" [disabled]="busy()" (click)="clock('break-start')">
+            Start break
+          </button>
+          <button type="button" class="btn btn--primary clock-card__action" [disabled]="busy()" (click)="clock('out')">
+            Clock out
+          </button>
+        }
+        @case ('OnBreak') {
+          <button type="button" class="btn btn--primary clock-card__action" [disabled]="busy()" (click)="clock('break-end')">
+            End break
+          </button>
+        }
+        @case ('ClockedOut') {
+          <button type="button" class="btn btn--primary clock-card__action" disabled>Done for today</button>
+        }
+        @default {
+          <button type="button" class="btn btn--primary clock-card__action" [disabled]="busy() || !state()" (click)="clock('in')">
+            Clock in
+          </button>
+        }
+      }
+    </div>
   </div>
+
+  @if (errorText()) {
+    <p class="form-error">{{ errorText() }}</p>
+  }
+  @if (state()?.message) {
+    <p class="form-note">{{ state()?.message }}</p>
+  }
 
   <div class="clock-card__footer">
     <span
       >Clock times fill today's Log-in, Log-out and Break in your timesheet. A break over 1 hour
       alerts you and your administrator.</span
-    >
-    <span
-      >Demo:
-      <a class="link" href="javascript:void(0)" (click)="skipAhead15Minutes()"
-        >skip ahead 15 min</a
-      ></span
     >
   </div>
 </div>

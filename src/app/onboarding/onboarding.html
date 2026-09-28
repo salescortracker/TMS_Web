@@ -19,69 +19,58 @@
     <p class="text-muted">Fill in your details below. Nothing goes live until it's approved.</p>
 
     <form class="card form-page__card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (isDone()) {
+        <p class="alert alert--success">{{ statusMessage() }}</p>
+      }
+
       <div class="form-grid">
         <div class="field">
           <label class="field__label" for="firstName">First name</label>
-          <input
-            id="firstName"
-            class="input-control"
-            type="text"
-            placeholder="Jordan"
-            formControlName="firstName"
-          />
+          <input id="firstName" class="input-control" type="text" placeholder="Jordan" formControlName="firstName" />
+          @if (showError('firstName')) {
+            <span class="field-error">First name is required.</span>
+          }
         </div>
 
         <div class="field">
           <label class="field__label" for="lastName">Last name</label>
-          <input
-            id="lastName"
-            class="input-control"
-            type="text"
-            placeholder="Alvarez"
-            formControlName="lastName"
-          />
+          <input id="lastName" class="input-control" type="text" placeholder="Alvarez" formControlName="lastName" />
+          @if (showError('lastName')) {
+            <span class="field-error">Last name is required.</span>
+          }
         </div>
 
         <div class="field">
           <label class="field__label" for="dob">Date of birth</label>
-          <input
-            id="dob"
-            class="input-control"
-            type="text"
-            placeholder="MM/DD/YYYY"
-            formControlName="dateOfBirth"
-          />
+          <input id="dob" class="input-control" type="date" [max]="today" formControlName="dateOfBirth" />
+          @if (showError('dateOfBirth')) {
+            <span class="field-error">Date of birth is required.</span>
+          }
         </div>
 
         <div class="field">
           <label class="field__label" for="joiningDate">Joining date</label>
-          <input
-            id="joiningDate"
-            class="input-control"
-            type="text"
-            placeholder="MM/DD/YYYY"
-            formControlName="joiningDate"
-          />
+          <input id="joiningDate" class="input-control" type="date" formControlName="joiningDate" />
+          @if (showError('joiningDate')) {
+            <span class="field-error">Joining date is required.</span>
+          }
         </div>
 
         <div class="field">
           <label class="field__label" for="team">Team</label>
-          <select
-            id="team"
-            class="input-control"
-            formControlName="team"
-            (change)="onTeamChange()"
-          >
-            @for (team of teamOptions; track team.value) {
-              <option [value]="team.value">{{ team.label }}</option>
+          <select id="team" class="input-control" formControlName="teamId" (change)="onTeamChange()">
+            @for (team of teams(); track team.id) {
+              <option [value]="team.id">{{ team.name }} ({{ team.extra }})</option>
             }
           </select>
         </div>
 
         <div class="field">
           <label class="field__label" for="companyName">Company name</label>
-          <select id="companyName" class="input-control" formControlName="companyName">
-            <option value="Cortracker Inc">Cortracker Inc</option>
+          <select id="companyName" class="input-control" formControlName="companyId">
+            @for (company of companies(); track company.id) {
+              <option [value]="company.id">{{ company.name }}</option>
+            }
           </select>
         </div>
 
@@ -89,25 +78,19 @@
           <label class="field__label" for="phoneNumber">Phone number</label>
           <div class="phone-group">
             <span class="phone-group__prefix">{{ form.controls.dialCode.value }}</span>
-            <input
-              id="phoneNumber"
-              class="input-control"
-              type="tel"
-              placeholder="234-567-8910"
-              formControlName="phoneNumber"
-            />
+            <input id="phoneNumber" class="input-control" type="tel" placeholder="234-567-8910" formControlName="phoneNumber" />
           </div>
+          @if (showError('phoneNumber')) {
+            <span class="field-error">Enter a valid phone number (digits, spaces, dashes).</span>
+          }
         </div>
 
         <div class="field">
           <label class="field__label" for="email">Email ID</label>
-          <input
-            id="email"
-            class="input-control"
-            type="email"
-            placeholder="jordan.alvarez&#64;cortracker360.com"
-            formControlName="email"
-          />
+          <input id="email" class="input-control" type="email" placeholder="jordan.alvarez&#64;cortracker360.com" formControlName="email" />
+          @if (showError('email')) {
+            <span class="field-error">Enter a valid work email.</span>
+          }
         </div>
       </div>
 
@@ -123,13 +106,15 @@
         </p>
       </div>
 
-      @if (statusMessage()) {
-        <p class="form-note">{{ statusMessage() }}</p>
+      @if (statusMessage() && !isDone()) {
+        <p class="form-note" [class.form-error]="statusIsError()">{{ statusMessage() }}</p>
       }
 
       <div class="form-actions">
-        <button type="button" class="btn btn--secondary" (click)="saveDraft()">Save draft</button>
-        <button type="submit" class="btn btn--primary">Submit for approval</button>
+        <button type="button" class="btn btn--secondary" (click)="saveDraft()" [disabled]="isSaving()">Save draft</button>
+        <button type="submit" class="btn btn--primary" [disabled]="isSaving()">
+          {{ isSaving() ? 'Sending…' : 'Submit for approval' }}
+        </button>
       </div>
     </form>
   </main>

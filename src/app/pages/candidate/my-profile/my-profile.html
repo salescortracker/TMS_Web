@@ -6,81 +6,90 @@
     </div>
   </div>
 
-  <form class="card" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
-    <div class="form-grid">
-      <div class="field">
-        <label class="field__label" for="firstName">First name</label>
-        <input id="firstName" class="input-control" type="text" formControlName="firstName" />
-      </div>
+  @if (loading()) {
+    <p class="page-state">Loading your profile…</p>
+  } @else {
+    <form class="card" [formGroup]="form" (ngSubmit)="saveChanges()" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label" for="firstName">First name</label>
+          <input id="firstName" class="input-control" type="text" formControlName="firstName" />
+          @if (showError('firstName')) {
+            <span class="field-error">First name is required.</span>
+          }
+        </div>
 
-      <div class="field">
-        <label class="field__label" for="lastName">Last name</label>
-        <input id="lastName" class="input-control" type="text" formControlName="lastName" />
-      </div>
+        <div class="field">
+          <label class="field__label" for="lastName">Last name</label>
+          <input id="lastName" class="input-control" type="text" formControlName="lastName" />
+          @if (showError('lastName')) {
+            <span class="field-error">Last name is required.</span>
+          }
+        </div>
 
-      <div class="field">
-        <label class="field__label" for="dateOfBirth">Date of birth</label>
-        <input
-          id="dateOfBirth"
-          class="input-control"
-          type="text"
-          placeholder="MM/DD/YYYY"
-          formControlName="dateOfBirth"
-        />
-      </div>
+        <div class="field">
+          <label class="field__label" for="dateOfBirth">Date of birth</label>
+          <input id="dateOfBirth" class="input-control" type="date" [max]="today" formControlName="dateOfBirth" />
+          @if (showError('dateOfBirth')) {
+            <span class="field-error">Date of birth is required.</span>
+          }
+        </div>
 
-      <div class="field">
-        <label class="field__label" for="joiningDate">Joining date</label>
-        <input
-          id="joiningDate"
-          class="input-control"
-          type="text"
-          placeholder="MM/DD/YYYY"
-          formControlName="joiningDate"
-        />
-      </div>
+        <div class="field">
+          <label class="field__label" for="joiningDate">Joining date</label>
+          <input id="joiningDate" class="input-control" type="date" formControlName="joiningDate" />
+          @if (showError('joiningDate')) {
+            <span class="field-error">Joining date is required.</span>
+          }
+        </div>
 
-      <div class="field">
-        <label class="field__label" for="phoneNumber">Phone number</label>
-        <div class="phone-group">
-          <span class="phone-group__prefix">{{ form.controls.dialCode.value }}</span>
-          <input
-            id="phoneNumber"
-            class="input-control"
-            type="tel"
-            formControlName="phoneNumber"
-          />
+        <div class="field">
+          <label class="field__label" for="phoneNumber">Phone number</label>
+          <div class="phone-group">
+            <span class="phone-group__prefix">{{ form.controls.dialCode.value }}</span>
+            <input id="phoneNumber" class="input-control" type="tel" formControlName="phoneNumber" />
+          </div>
+          @if (showError('phoneNumber')) {
+            <span class="field-error">Enter a valid phone number (digits, spaces, dashes).</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="email">Email ID</label>
+          <input id="email" class="input-control" type="email" formControlName="email" />
+          @if (showError('email')) {
+            <span class="field-error">Enter a valid email.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="team">Team</label>
+          <select id="team" class="input-control" formControlName="teamId" (change)="onTeamChange()">
+            @for (team of teams(); track team.id) {
+              <option [value]="team.id">{{ team.name }} ({{ team.extra }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="companyName">Company name</label>
+          <select id="companyName" class="input-control" formControlName="companyId">
+            @for (company of companies(); track company.id) {
+              <option [value]="company.id">{{ company.name }}</option>
+            }
+          </select>
         </div>
       </div>
 
-      <div class="field">
-        <label class="field__label" for="email">Email ID</label>
-        <input id="email" class="input-control" type="email" formControlName="email" />
+      @if (statusMessage()) {
+        <p class="form-note" [class.form-error]="statusIsError()">{{ statusMessage() }}</p>
+      }
+
+      <div class="form-actions form-actions--start">
+        <button type="submit" class="btn btn--primary" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : 'Save changes' }}
+        </button>
       </div>
-
-      <div class="field">
-        <label class="field__label" for="team">Team</label>
-        <select id="team" class="input-control" formControlName="team" (change)="onTeamChange()">
-          @for (team of teamOptions; track team.value) {
-            <option [value]="team.value">{{ team.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="field">
-        <label class="field__label" for="companyName">Company name</label>
-        <select id="companyName" class="input-control" formControlName="companyName">
-          <option value="Cortracker Inc">Cortracker Inc</option>
-        </select>
-      </div>
-    </div>
-
-    @if (statusMessage()) {
-      <p class="form-note">{{ statusMessage() }}</p>
-    }
-
-    <div class="form-actions form-actions--start">
-      <button type="submit" class="btn btn--primary">Save changes</button>
-    </div>
-  </form>
+    </form>
+  }
 </div>

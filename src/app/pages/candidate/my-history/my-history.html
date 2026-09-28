@@ -8,47 +8,58 @@
     </div>
   </div>
 
+  @if (errorText()) {
+    <p class="form-error">{{ errorText() }}</p>
+  }
+
   <section class="card">
-    <div class="table-scroll">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Week</th>
-            <th>Hours</th>
-            <th>Days</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (week of weeks; track week.weekLabel) {
+    @if (loading()) {
+      <p class="page-state">Loading history…</p>
+    } @else if (weeks().length === 0) {
+      <p class="page-state">No timesheets yet. Enter your first day from My Timesheet.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td class="cell--strong">{{ week.weekLabel }}</td>
-              <td>{{ week.hours }}</td>
-              <td>
-                <div class="badge-group">
-                  @for (badge of week.badges; track badge.label) {
-                    <span
-                      class="badge"
-                      [class.badge--success]="badge.tone === 'success'"
-                      [class.badge--warning]="badge.tone === 'warning'"
-                      [class.badge--danger]="badge.tone === 'danger'"
-                      [class.badge--neutral]="badge.tone === 'neutral'"
-                      >{{ badge.label }}</span
-                    >
-                  }
-                </div>
-              </td>
-              <td>
-                @if (week.isCurrent) {
-                  <a class="link link--strong" routerLink="/candidate/my-timesheet">Open</a>
-                } @else {
-                  <a class="link link--strong" href="javascript:void(0)">View</a>
-                }
-              </td>
+              <th>Week</th>
+              <th>Hours</th>
+              <th>Days</th>
+              <th>Action</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (week of weeks(); track week.weekStart) {
+              <tr>
+                <td class="cell--strong">{{ week.weekLabel }}</td>
+                <td>{{ week.hours }}</td>
+                <td>
+                  <div class="badge-group">
+                    @for (badge of week.badges; track badge.label) {
+                      <span
+                        class="badge"
+                        [class.badge--success]="badge.tone === 'success'"
+                        [class.badge--warning]="badge.tone === 'warning'"
+                        [class.badge--danger]="badge.tone === 'danger'"
+                        [class.badge--neutral]="badge.tone === 'neutral'"
+                        >{{ badge.label }}</span
+                      >
+                    }
+                  </div>
+                </td>
+                <td>
+                  <a
+                    class="link link--strong"
+                    routerLink="/candidate/my-timesheet"
+                    [queryParams]="{ week: week.weekStart }"
+                    >{{ week.isCurrent ? 'Open' : 'View' }}</a
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </section>
 </div>
